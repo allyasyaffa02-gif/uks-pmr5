@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<title>PMR — Catatan Kesehatan Siswa</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="cross-mark"></div>
+    <div>
+      <h1>Catatan Kesehatan Siswa</h1>
+      <p>PMR — data siswa sakit saat upacara maupun hari biasa</p>
+    </div>
+  </header>
+
+  <div class="stats">
+    <div class="stat"><div class="num" id="stat-total">0</div><div class="lbl">Total kasus</div></div>
+    <div class="stat upacara"><div class="num" id="stat-upacara">0</div><div class="lbl">Saat upacara</div></div>
+    <div class="stat harian"><div class="num" id="stat-harian">0</div><div class="lbl">Hari biasa</div></div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="input">Catat Baru</button>
+    <button class="tab-btn" data-tab="data">Data (Spreadsheet)</button>
+    <button class="tab-btn" data-tab="rekap">Rekap per Kelas</button>
+  </div>
+
+  <!-- TAB: INPUT -->
+  <div class="panel active" id="panel-input">
+    <div class="card">
+      <h2>Catat kasus baru <span class="tag">FORM PMR</span></h2>
+      <form id="form">
+        <div class="field">
+          <label>Nama siswa</label>
+          <input type="text" id="f-nama" placeholder="Nama lengkap" required>
+        </div>
+        <div class="field">
+          <label>Kelas</label>
+          <input type="text" id="f-kelas" placeholder="Contoh: X-2" required>
+        </div>
+
+        <div class="field full">
+          <label>Situasi</label>
+          <div class="situasi-toggle">
+            <button type="button" data-val="Upacara" class="active">Saat Upacara</button>
+            <button type="button" data-val="Hari Biasa">Hari Biasa</button>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Tanggal</label>
+          <input type="date" id="f-tanggal" required>
+        </div>
+        <div class="field">
+          <label>Jam kejadian</label>
+          <input type="text" id="f-jam" placeholder="Contoh: 07.15">
+        </div>
+
+        <div class="field full">
+          <label>Keluhan</label>
+          <textarea id="f-keluhan" placeholder="Contoh: Pusing, lemas, mual..." required></textarea>
+        </div>
+        <div class="field full">
+          <label>Penanganan</label>
+          <textarea id="f-penanganan" placeholder="Contoh: Dibawa ke ruang UKS, diberi minum, istirahat 15 menit..." required></textarea>
+        </div>
+
+        <div class="submit-row">
+          <button type="submit" class="primary" id="submit-btn">Catat kasus</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- TAB: DATA / SPREADSHEET -->
+  <div class="panel" id="panel-data">
+    <div class="toolbar">
+      <input type="text" id="search" placeholder="Cari nama / kelas...">
+      <select id="filter-situasi">
+        <option value="Semua">Semua situasi</option>
+        <option value="Upacara">Saat Upacara</option>
+        <option value="Hari Biasa">Hari Biasa</option>
+      </select>
+      <button class="btn-outline" id="export-data">Unduh CSV</button>
+    </div>
+    <div id="data-wrap"></div>
+  </div>
+
+  <!-- TAB: REKAP KELAS -->
+  <div class="panel" id="panel-rekap">
+    <div class="toolbar">
+      <div class="rekap-note">Rekap otomatis jumlah kasus per kelas dari seluruh data yang tercatat.</div>
+      <button class="btn-outline" id="export-rekap">Unduh CSV</button>
+    </div>
+    <div id="rekap-wrap"></div>
+  </div>
+
+  <footer>Data tersimpan otomatis dan dapat dilihat oleh seluruh anggota PMR yang membuka halaman ini.</footer>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
