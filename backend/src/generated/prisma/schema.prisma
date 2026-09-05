@@ -1,0 +1,36 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+model MasterKategori {
+  id        BigInt    @id @default(autoincrement())
+  name      String    @db.VarChar(20)
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime? @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+  pasiens   Pasien[]
+
+  @@map("master_kategori")
+}
+
+model Pasien {
+  id         BigInt         @id @default(autoincrement())
+  name       String         @db.VarChar(100)
+  kelas      String         @db.VarChar(10)
+  kategoriId BigInt         @map("kategori_id")
+  kategori   MasterKategori @relation(fields: [kategoriId], references: [id])
+  date       DateTime       @db.Date
+  time       String         @db.VarChar(10)
+  keluhan    String         @db.Text
+  penanganan String         @db.Text
+  createdAt  DateTime       @default(now()) @map("created_at")
+  updatedAt  DateTime?      @updatedAt @map("updated_at")
+  deletedAt  DateTime?      @map("deleted_at")
+
+  @@map("pasien")
+}
