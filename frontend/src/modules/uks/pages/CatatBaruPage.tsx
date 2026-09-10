@@ -1,152 +1,173 @@
-import React, { useState } from 'react';
-import { useUksKasus } from '../hooks/useUksKasus';
-import { Save, UserCheck, Calendar, Clock, AlertCircle, Stethoscope } from 'lucide-react';
+import React from "react";
+import { useForm } from "react-hook-form";
+import { useUksKasus } from "../hooks/useUksKasus";
+import {
+  Save,
+  UserCheck,
+  Calendar,
+  Clock,
+  AlertCircle,
+  Stethoscope,
+} from "lucide-react";
+import { FormInput } from "../../../components/ui/FormInput";
+import { FormTextArea } from "../../../components/ui/FormTextArea";
+import { KasusFormValues } from "../../../types/form";
 
 interface CatatBaruPageProps {
   onSuccess: () => void;
 }
 
+const toggleClass = (active: boolean) =>
+  `flex-1 cursor-pointer rounded-field border px-4 py-2.5 font-inherit text-[0.88rem] font-semibold transition-all duration-200 ease-[cubic-bezier(0.25,0.1,0.25,1)] ${
+    active
+      ? "border-primary bg-primary/20 text-white"
+      : "border-white/10 bg-input text-ink-muted"
+  }`;
+
 export const CatatBaruPage: React.FC<CatatBaruPageProps> = ({ onSuccess }) => {
   const { createKasus, isCreating } = useUksKasus();
 
-  const [nama, setNama] = useState('');
-  const [kelas, setKelas] = useState('');
-  const [situasi, setSituasi] = useState('Saat Upacara');
-  const [tanggal, setTanggal] = useState(() => new Date().toISOString().split('T')[0]);
-  const [jam, setJam] = useState(() => {
+  const getInitialValues = (): KasusFormValues => {
     const now = new Date();
-    return `${String(now.getHours()).padStart(2, '0')}.${String(now.getMinutes()).padStart(2, '0')}`;
+    const formattedJam = `${String(now.getHours()).padStart(2, "0")}.${String(now.getMinutes()).padStart(2, "0")}`;
+    return {
+      nama: "",
+      kelas: "",
+      situasi: "Saat Upacara",
+      tanggal: now.toISOString().split("T")[0],
+      jam: formattedJam,
+      keluhan: "",
+      penanganan: "",
+    };
+  };
+
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    watch,
+    formState: { errors },
+  } = useForm<KasusFormValues>({
+    defaultValues: getInitialValues(),
   });
-  const [keluhan, setKeluhan] = useState('');
-  const [penanganan, setPenanganan] = useState('');
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!nama.trim() || !kelas.trim() || !keluhan.trim() || !penanganan.trim()) return;
+  const situasiValue = watch("situasi");
 
+  const onSubmit = async (data: KasusFormValues) => {
     try {
       await createKasus({
-        nama: nama.trim(),
-        kelas: kelas.trim(),
-        situasi,
-        tanggal,
-        jam: jam.trim(),
-        keluhan: keluhan.trim(),
-        penanganan: penanganan.trim(),
+        nama: data.nama.trim(),
+        kelas: data.kelas.trim(),
+        situasi: data.situasi,
+        tanggal: data.tanggal,
+        jam: data.jam?.trim(),
+        keluhan: data.keluhan.trim(),
+        penanganan: data.penanganan.trim(),
       });
       onSuccess();
     } catch (err) {
-      console.error('Gagal mencatat kasus baru', err);
+      console.error("Gagal mencatat kasus baru", err);
     }
   };
 
   return (
-    <div className="panel-card">
-      <div className="card-header">
-        <h2>
-          Catat kasus baru <span className="tag">FORM PMR</span>
-        </h2>
-      </div>
+    <div>
+      <h2 className="mb-5 flex items-center gap-3 text-[1.25rem] font-bold text-ink">
+        Catat kasus baru{" "}
+        <span className="inline-block rounded-[6px] border border-primary/30 bg-primary/20 px-2 py-0.5 text-[0.7rem] font-bold tracking-[0.05em] text-red-400">
+          FORM PMR
+        </span>
+      </h2>
 
-      <form onSubmit={handleSubmit} className="form-grid">
-        <div className="field">
-          <label>
-            <UserCheck size={16} /> Nama siswa
+      <form
+        onSubmit={handleSubmit(onSubmit)}
+        className="grid grid-cols-2 gap-[18px] max-w-6xl"
+      >
+        <FormInput
+          label="Nama siswa"
+          icon={UserCheck}
+          placeholder="Nama lengkap"
+          registration={register("nama", {
+            required: "Nama siswa wajib diisi",
+          })}
+          error={errors.nama}
+        />
+
+        <FormInput
+          label="Kelas"
+          placeholder="Contoh: X-2"
+          registration={register("kelas", { required: "Kelas wajib diisi" })}
+          error={errors.kelas}
+        />
+
+        <div className="col-span-2 flex flex-col gap-1.5">
+          <label className="text-[0.85rem] font-semibold text-ink-muted">
+            Situasi Kejadian
           </label>
-          <input
-            type="text"
-            placeholder="Nama lengkap"
-            value={nama}
-            onChange={(e) => setNama(e.target.value)}
-            required
-          />
-        </div>
-
-        <div className="field">
-          <label>Kelas</label>
-          <input
-            type="text"
-            placeholder="Contoh: X-2"
-            value={kelas}
-            onChange={(e) => setKelas(e.target.value)}
-            required
-          />
-        </div>
-
-        <div className="field full">
-          <label>Situasi Kejadian</label>
-          <div className="situasi-toggle">
+          <div className="flex gap-2">
             <button
               type="button"
-              className={situasi === 'Saat Upacara' ? 'active' : ''}
-              onClick={() => setSituasi('Saat Upacara')}
+              className={toggleClass(situasiValue === "Saat Upacara")}
+              onClick={() => setValue("situasi", "Saat Upacara")}
             >
               Saat Upacara
             </button>
             <button
               type="button"
-              className={situasi === 'Hari Biasa' ? 'active' : ''}
-              onClick={() => setSituasi('Hari Biasa')}
+              className={toggleClass(situasiValue === "Hari Biasa")}
+              onClick={() => setValue("situasi", "Hari Biasa")}
             >
               Hari Biasa
             </button>
           </div>
         </div>
 
-        <div className="field">
-          <label>
-            <Calendar size={16} /> Tanggal
-          </label>
-          <input
-            type="date"
-            value={tanggal}
-            onChange={(e) => setTanggal(e.target.value)}
-            required
-          />
-        </div>
+        <FormInput
+          label="Tanggal"
+          type="date"
+          icon={Calendar}
+          registration={register("tanggal", {
+            required: "Tanggal wajib diisi",
+          })}
+          error={errors.tanggal}
+        />
 
-        <div className="field">
-          <label>
-            <Clock size={16} /> Jam kejadian
-          </label>
-          <input
-            type="text"
-            placeholder="Contoh: 07.15"
-            value={jam}
-            onChange={(e) => setJam(e.target.value)}
-          />
-        </div>
+        <FormInput
+          label="Jam kejadian"
+          icon={Clock}
+          placeholder="Contoh: 07.15"
+          registration={register("jam")}
+          error={errors.jam}
+        />
 
-        <div className="field full">
-          <label>
-            <AlertCircle size={16} /> Keluhan
-          </label>
-          <textarea
-            placeholder="Contoh: Pusing, lemas, mual..."
-            value={keluhan}
-            onChange={(e) => setKeluhan(e.target.value)}
-            rows={3}
-            required
-          />
-        </div>
+        <FormTextArea
+          label="Keluhan"
+          icon={AlertCircle}
+          placeholder="Contoh: Pusing, lemas, mual..."
+          registration={register("keluhan", {
+            required: "Keluhan wajib diisi",
+          })}
+          error={errors.keluhan}
+        />
 
-        <div className="field full">
-          <label>
-            <Stethoscope size={16} /> Penanganan
-          </label>
-          <textarea
-            placeholder="Contoh: Dibawa ke ruang UKS, diberi minum, istirahat 15 menit..."
-            value={penanganan}
-            onChange={(e) => setPenanganan(e.target.value)}
-            rows={3}
-            required
-          />
-        </div>
+        <FormTextArea
+          label="Penanganan"
+          icon={Stethoscope}
+          placeholder="Contoh: Dibawa ke ruang UKS, diberi minum, istirahat 15 menit..."
+          registration={register("penanganan", {
+            required: "Penanganan wajib diisi",
+          })}
+          error={errors.penanganan}
+        />
 
-        <div className="submit-row">
-          <button type="submit" className="primary-btn" disabled={isCreating}>
+        <div className="col-span-2 mt-2.5 flex justify-end">
+          <button
+            type="submit"
+            className="flex cursor-pointer items-center gap-2 rounded-field border-none bg-gradient-to-br from-primary to-primary-deep px-6 py-3 font-inherit text-[0.95rem] font-bold text-white shadow-glow transition-all duration-200 ease-[cubic-bezier(0.25,0.1,0.25,1)] hover:-translate-y-px hover:shadow-glow-lg disabled:cursor-not-allowed disabled:opacity-50"
+            disabled={isCreating}
+          >
             <Save size={18} />
-            <span>{isCreating ? 'Menyimpan...' : 'Catat kasus'}</span>
+            <span>{isCreating ? "Menyimpan..." : "Catat kasus"}</span>
           </button>
         </div>
       </form>
