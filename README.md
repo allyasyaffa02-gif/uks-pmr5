@@ -46,7 +46,10 @@ uks-pmr5/
 │   ├── nest-cli.json
 │   ├── package.json          # Dependency backend
 │   ├── prisma.config.ts      # Konfigurasi Prisma 7
-│   └── tsconfig.json
+│   ├── tsconfig.json
+│   ├── Dockerfile            # Docker image backend (multi-stage)
+│   ├── docker-entrypoint.sh  # Script migrasi + start app di container
+│   └── .dockerignore
 │
 ├── frontend/                 # Aplikasi Frontend (React + Vite)
 │   ├── src/
@@ -66,8 +69,13 @@ uks-pmr5/
 │   ├── index.html
 │   ├── package.json          # Dependency frontend
 │   ├── tsconfig.json
-│   └── vite.config.ts
+│   ├── vite.config.ts
+│   ├── nginx.conf            # Konfigurasi Nginx (SPA fallback + proxy /api)
+│   ├── Dockerfile            # Docker image frontend (Vite build + Nginx)
+│   └── .dockerignore
 │
+├── docker-compose.yml        # Orkestrasi seluruh service (db + backend + frontend)
+├── .env.example              # Template environment variable
 └── README.md                 # Dokumentasi Project
 ```
 
@@ -75,14 +83,90 @@ uks-pmr5/
 
 ## ⚡ Prasyarat Sistem
 
-Sebelum menjalankan project, pastikan perangkat Anda telah terinstall:
+### Cara 1 — Docker (Direkomendasikan)
+- **Docker** (v24+) & **Docker Compose** (v2+)
+- Tidak perlu install Node.js, Bun, atau database secara manual
+
+### Cara 2 — Manual (Local Development)
 - **Node.js** (v18+) atau **Bun** (v1.0+)
-- **MySQL** atau **MariaDB Server**
+- **MySQL** atau **MariaDB Server** (v10.6+)
 - Database kosong yang sudah dibuat (misal: `uks_db`)
 
 ---
 
-## 🚀 Cara Menjalankan Project
+## 🐳 Cara 1: Menjalankan dengan Docker (Production-Ready)
+
+Cara ini menjalankan keseluruhan stack (database + backend + frontend) dalam container secara otomatis.
+
+### Langkah-langkah
+
+1. **Pastikan Docker Desktop sudah berjalan.**
+
+2. **Salin file environment dan isi nilainya:**
+   ```bash
+   cp .env.example .env
+   ```
+   Kemudian edit file `.env`:
+   ```env
+   # Password database — ganti dengan nilai yang aman
+   MYSQL_ROOT_PASSWORD=root_password_aman
+   MYSQL_DATABASE=uks_pmr
+   MYSQL_USER=uks_user
+   MYSQL_PASSWORD=password_aman
+
+   # Port yang akan dibuka ke browser (default: 80)
+   APP_PORT=80
+
+   # URL API untuk frontend (jangan diubah jika menggunakan Nginx proxy)
+   VITE_API_BASE_URL=/api
+   ```
+
+3. **Build dan jalankan semua container:**
+   ```bash
+   docker compose up -d --build
+   ```
+   Proses ini akan:
+   - Menarik image MySQL 8
+   - Build image backend (NestJS) & frontend (React/Nginx)
+   - Menjalankan migrasi Prisma secara otomatis
+   - Menyajikan aplikasi di port yang dikonfigurasi
+
+4. **Cek status container:**
+   ```bash
+   docker compose ps
+   ```
+   Semua service (`db`, `backend`, `frontend`) harus berstatus `running`.
+
+5. **Pantau log backend** (opsional, untuk memastikan migrasi berhasil):
+   ```bash
+   docker compose logs -f backend
+   ```
+   Output yang diharapkan:
+   ```
+   ⏳ Running Prisma migrations...
+   🚀 Starting NestJS backend...
+   [NestJS] Application is running on: http://[::1]:3000/api
+   ```
+
+6. **Buka aplikasi di browser:**
+   ```
+   http://localhost           # jika APP_PORT=80
+   http://localhost:8080      # jika APP_PORT=8080
+   ```
+
+### Menghentikan & Membersihkan
+
+```bash
+# Hentikan semua container (data tetap tersimpan)
+docker compose down
+
+# Hentikan dan hapus semua data (volume database ikut terhapus)
+docker compose down -v
+```
+
+---
+
+## 🚀 Cara 2: Menjalankan Manual (Local Development)
 
 ### 1. Menjalankan Backend (`/backend`)
 
@@ -104,17 +188,18 @@ Sebelum menjalankan project, pastikan perangkat Anda telah terinstall:
 3. **Konfigurasi Environment Variable (`.env`):**
    Buat file `.env` di dalam folder `backend/`:
    ```env
-   DATABASE_URL="mysql://root:password_database_anda@localhost:3306/uks_db"
+   DATABASE_URL="mariadb://root:password_database_anda@localhost:3306/uks_db"
    PORT=3000
    ```
-   *(Sesuaikan user, password, host, port, dan nama database MariaDB/MySQL Anda)*.
+   > ⚠️ Gunakan skema `mariadb://` (bukan `mysql://`) karena project ini menggunakan `@prisma/adapter-mariadb`.
+   > Sesuaikan user, password, host, port, dan nama database dengan konfigurasi lokal Anda.
 
 4. **Generate Prisma Client & Jalankan Migrasi Database:**
    ```bash
-   # Generate Client
+   # Generate Prisma Client
    npx prisma generate
 
-   # Jalankan Migrasi ke Database
+   # Jalankan migrasi ke database
    npx prisma migrate dev --name init
    ```
 
@@ -149,7 +234,7 @@ Sebelum menjalankan project, pastikan perangkat Anda telah terinstall:
    ```
 
 3. **Konfigurasi Environment Variable (`.env`):**
-   Buat file `.env` di dalam folder `frontend/` (opsional, jika ingin mengubah URL Backend):
+   Buat file `.env` di dalam folder `frontend/`:
    ```env
    VITE_API_BASE_URL=http://localhost:3000/api
    ```
