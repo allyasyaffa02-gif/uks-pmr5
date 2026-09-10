@@ -1,8 +1,13 @@
 services:
+  # Database lokal — HANYA jalan jika profile "local-db" aktif
+  # (diatur lewat COMPOSE_PROFILES di file .env).
+  # Jika memakai database di server terpisah, kosongkan COMPOSE_PROFILES
+  # di .env dan isi DATABASE_URL — container ini tidak akan ikut berjalan.
   db:
     image: mysql:8.0
     container_name: uks-pmr-db
     restart: unless-stopped
+    profiles: ["local-db"]
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       MYSQL_DATABASE: ${MYSQL_DATABASE}
@@ -28,11 +33,14 @@ services:
     container_name: uks-pmr-backend
     restart: unless-stopped
     environment:
-      DATABASE_URL: mariadb://${MYSQL_USER}:${MYSQL_PASSWORD}@db:3306/${MYSQL_DATABASE}
+      # Default: database container lokal ("db").
+      # Override via DATABASE_URL di .env untuk memakai server terpisah, contoh:
+      #   DATABASE_URL=mariadb://uks_user:password@192.168.1.50:3306/uks_pmr
+      DATABASE_URL: ${DATABASE_URL:-mariadb://${MYSQL_USER}:${MYSQL_PASSWORD}@db:3306/${MYSQL_DATABASE}}
       PORT: 3000
-    depends_on:
-      db:
-        condition: service_healthy
+    # depends_on db sengaja tidak ada — db bisa jadi tidak dijalankan lewat
+    # profile. Entrypoint backend memiliki retry-loop yang menunggu database
+    # siap (lokal maupun eksternal) sebelum menjalankan migrasi.
     networks:
       - uks-net
 
