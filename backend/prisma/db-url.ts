@@ -62,7 +62,7 @@ export interface MariadbPoolOptions {
   user: string;
   password: string;
   database: string;
-  ssl?: { rejectUnauthorized: boolean; ca?: string };
+  ssl?: { rejectUnauthorized: boolean; ca?: string; checkServerIdentity?: (host: string, cert: unknown) => Error | undefined };
   connectionLimit?: number;
   acquireTimeout?: number;
   idleTimeout?: number;
@@ -203,7 +203,16 @@ function resolveTls(scheme: DbScheme, params: Record<string, string>, host: stri
     try {
       rejectUnauthorized = JSON.parse(explicit).rejectUnauthorized !== false;
     } catch {
-      /* malformed json -> encrypt and verify, the safe default */
+      /* Bun's .env loader keeps \" escapes of a quoted value intact, so a URL
+       * like ?ssl={\"rejectUnauthorized\":false} arrives with literal
+       * backslashes and JSON.parse rejects it. Undo the escape and retry
+       * before falling back to the strict default. */
+      try {
+        const unescaped = explicit.replace(/\\(["\\])/g, "$1");
+        rejectUnauthorized = JSON.parse(unescaped).rejectUnauthorized !== false;
+      } catch {
+        /* still malformed -> encrypt and verify, the safe default */
+      }
     }
   } else if (explicit !== undefined) {
     const flag = (explicit || "true").toLowerCase();
@@ -329,6 +338,16 @@ export function toMariadbPoolOptions(db: DbConnection): MariadbPoolOptions {
     const ssl: NonNullable<MariadbPoolOptions["ssl"]> = { rejectUnauthorized: db.tls.rejectUnauthorized };
     const ca = readCa(db.tls.ca);
     if (ca) ssl.ca = ca;
+    if (!db.tls.rejectUnauthorized) {
+      // Encrypt-only mode must not verify the server identity. Node honours
+      // `rejectUnauthorized: false` on its own, but Bun's TLS stack does not
+      // forward that option when the mariadb connector upgrades an already
+      // established socket - it runs the hostname check against the default
+      // "localhost" and fails with ERR_TLS_CERT_ALTNAME_INVALID even though
+      // the real host is e.g. *.tidbcloud.com. Disable the identity check
+      // outright so "encrypt without verification" works on both runtimes.
+      ssl.checkServerIdentity = () => undefined;
+    }
     options.ssl = ssl;
   }
   return options;
