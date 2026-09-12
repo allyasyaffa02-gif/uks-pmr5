@@ -301,13 +301,133 @@ Catatan:
 4. **Jalankan Development Server Frontend:**
    Dengan Bun:
    ```bash
-   bun dev
+   bun run dev
    ```
    Dengan npm:
    ```bash
    npm run dev
    ```
    Aplikasi Frontend akan dapat diakses di browser pada alamat **`http://localhost:5173`** (atau port yang ditampilkan Vite di terminal).
+
+---
+
+## 🏗️ Build Native (Tanpa Docker)
+
+Seluruh project bisa di-build dan dijalankan **tanpa Docker sama sekali**. Jalur ini setara dengan
+apa yang dilakukan Dockerfile, tetapi memakai toolchain lokal (Bun/Node) sehingga lebih cepat
+untuk iterasi development.
+
+> ✅ **Aman — build Docker tidak akan rusak.**
+> `backend/.dockerignore` dan `frontend/.dockerignore` sudah mengecualikan `node_modules/`,
+> `dist/`, dan `.env` dari build context (`backend/.dockerignore` juga mengecualikan
+> `src/generated/`), dan kedua Dockerfile selalu menjalankan
+> `bun install --frozen-lockfile` di dalam image. Artefak build native karenanya tidak pernah
+> ikut terbawa ke image Docker, dan sebaliknya. Satu-satunya yang dipakai bersama adalah source
+> code dan `bun.lock`.
+
+### 1. Backend — Build & Run Native
+
+```bash
+cd backend
+
+# a) Install dependency (sekali saja / saat lockfile berubah)
+bun install            # atau: npm install
+
+# b) Generate Prisma Client → src/generated/prisma
+bun run prisma:generate   # atau: bunx prisma generate
+
+# c) Jalankan migrasi ke database tujuan
+bunx prisma migrate deploy    # produksi (apply migrasi yang sudah ada)
+# atau saat mengembangkan skema baru:
+bun run prisma:migrate        # = prisma migrate dev
+
+# d) Build TypeScript → dist/
+bun run build          # = nest build (hasil: dist/src/main.js)
+
+# e) WAJIB: salin Prisma Client ke dalam dist
+#    `nest build` tidak meng-compile src/generated, sehingga harus disalin manual
+#    (di Docker, hal ini dilakukan oleh tahap runner: COPY --from=builder /app/src/generated ./dist/src/generated).
+#    Linux / macOS:
+cp -r src/generated dist/src/generated
+#    Windows PowerShell:
+Copy-Item src\generated dist\src\generated -Recurse -Force
+
+# f) Jalankan hasil build (mode produksi)
+bun run start:prod     # = node dist/src/main
+```
+
+Backend kini melayani **`http://localhost:3000/api`**.
+
+<details>
+<summary><b>Variabel environment yang dibutuhkan (backend/.env)</b></summary>
+
+```env
+PORT=3000
+
+# Database lokal (tanpa TLS):
+DATABASE_URL="mariadb://uks_user:password@127.0.0.1:3306/uks_pmr"
+
+# Database hosted / TiDB Cloud — TLS otomatis aktif karena host mengandung "tidb".
+# Enkripsi saja, tanpa verifikasi sertifikat (kondisi yang dipakai backend/.env sekarang):
+# DATABASE_URL="mysql://<key>.root:pw@gateway01.ap-southeast-1.prod.aws.tidbcloud.com:4000/db_uks?ssl={"rejectUnauthorized":false}"
+#
+# Verifikasi sertifikat penuh (direkomendasikan untuk produksi) — cukup ganti query-nya:
+# DATABASE_URL="mysql://<key>.root:pw@gateway01.ap-southeast-1.prod.aws.tidbcloud.com:4000/db_uks?sslaccept=strict"
+```
+
+> Catatan TLS (lihat `backend/prisma/db-url.ts`): TLS **otomatis aktif** untuk skema `tidb://`
+> atau host yang mengandung `tidb` (mis. `*.tidbcloud.com`).
+> - `?sslaccept=strict` → enkripsi **dan** verifikasi sertifikat (direkomendasikan untuk produksi).
+> - `?ssl={"rejectUnauthorized":false}` → enkripsi saja, tanpa verifikasi.
+> - `?ssl=false` → matikan TLS.
+>
+> Query `ssl` harus berupa **objek JSON**, bukan `?ssl=true`. Parser di `db-url.ts` sudah tahan
+> terhadap nilai yang ter-escape maupun yang polos, jadi kedua gaya penulisan di `.env`
+> tetap berfungsi. Untuk menjalankan CLI Prisma secara native, gunakan `bunx prisma …`
+> (bin hasil Bun di `node_modules/.bin` berekstensi `.exe`, sehingga `npx` bisa gagal).
+
+</details>
+
+### 2. Frontend — Build & Serve Native
+
+```bash
+cd frontend
+
+bun install                 # atau: npm install
+bun run build               # = tsc && vite build → menghasilkan dist/
+bun run preview             # serve hasil build di http://localhost:4173
+```
+
+Untuk pengembangan cepat, cukup jalankan `bun run dev` (Vite dev server + proxy `/api`
+→ `http://localhost:3000`).
+
+> 💡 `VITE_API_BASE_URL` **di-bake ke dalam bundle saat build**. Jadi:
+> - Native build yang dilayani sendiri → isi `http://localhost:3000/api`
+> - Build Docker (di belakang Nginx) → biarkan `/api` (Nginx yang mem-proxy)
+
+### 3. Perintah Praktis (Cheat Sheet)
+
+| Tujuan | Perintah |
+| :----- | :------- |
+| Backend dev (hot reload) | `cd backend && bun run start:dev` |
+| Backend build produksi | `cd backend && bun run build && cp -r src/generated dist/src/generated && bun run start:prod` |
+| Frontend dev | `cd frontend && bun run dev` |
+| Frontend build | `cd frontend && bun run build && bun run preview` |
+| Regenerate Prisma Client | `cd backend && bun run prisma:generate` |
+| Buat migrasi baru | `cd backend && bun run prisma:migrate` |
+| Terapkan migrasi | `cd backend && bunx prisma migrate deploy` |
+
+### 4. Kombinasi: Database Saja via Docker
+
+Jika Anda hanya menginginkan MySQL/MariaDB lokal tanpa meng-install server database:
+
+```bash
+docker compose --profile local-db up -d db
+```
+
+Lalu arahkan `backend/.env` ke `mariadb://uks_user:***@127.0.0.1:3307/uks_pmr`
+dan jalankan backend + frontend secara native seperti di atas. Container
+`backend` dan `frontend` tidak ikut berjalan karena hanya service `db` yang di-up.
 
 ---
 
