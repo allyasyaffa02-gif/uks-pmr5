@@ -1,7 +1,7 @@
 import React from 'react';
-import { PlusCircle, Table, BarChart3 } from 'lucide-react';
+import { PlusCircle, Table, BarChart3, KeyRound } from 'lucide-react';
 
-export type TabType = 'input' | 'data' | 'rekap';
+export type TabType = 'input' | 'data' | 'rekap' | 'password';
 
 interface NavigationTabsProps {
   activeTab: TabType;
@@ -17,7 +17,7 @@ export const NavigationTabs: React.FC<NavigationTabsProps> = ({ activeTab, onTab
     "bg-gradient-to-br from-primary to-primary-deep text-white shadow-glow";
 
   return (
-    <div className="flex gap-2 rounded-box border border-line bg-slate-900/60 p-1.5">
+    <div className="flex flex-wrap gap-2 rounded-box border border-line bg-slate-900/60 p-1.5">
       <button
         className={`${baseTabClass} ${
           activeTab === 'input' ? activeClass : inactiveClass
@@ -46,6 +46,16 @@ export const NavigationTabs: React.FC<NavigationTabsProps> = ({ activeTab, onTab
       >
         <BarChart3 size={18} />
         <span>Rekap per Kelas</span>
+      </button>
+
+      <button
+        className={`${baseTabClass} ${
+          activeTab === 'password' ? activeClass : inactiveClass
+        }`}
+        onClick={() => onTabChange('password')}
+      >
+        <KeyRound size={18} />
+        <span>Ganti Password</span>
       </button>
     </div>
   );

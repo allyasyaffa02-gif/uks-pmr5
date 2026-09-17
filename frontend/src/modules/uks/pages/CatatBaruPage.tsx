@@ -1,5 +1,5 @@
 import React from "react";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { useUksKasus } from "../hooks/useUksKasus";
 import {
   Save,
@@ -11,7 +11,13 @@ import {
 } from "lucide-react";
 import { FormInput } from "../../../components/ui/FormInput";
 import { FormTextArea } from "../../../components/ui/FormTextArea";
+import { FormDatePicker } from "../../../components/ui/FormDatePicker";
+import { FormTimePicker } from "../../../components/ui/FormTimePicker";
 import { KasusFormValues } from "../../../types/form";
+import {
+  formatDateValue,
+  formatTimeValue,
+} from "../../../utils/dateTime";
 
 interface CatatBaruPageProps {
   onSuccess: () => void;
@@ -29,13 +35,12 @@ export const CatatBaruPage: React.FC<CatatBaruPageProps> = ({ onSuccess }) => {
 
   const getInitialValues = (): KasusFormValues => {
     const now = new Date();
-    const formattedJam = `${String(now.getHours()).padStart(2, "0")}.${String(now.getMinutes()).padStart(2, "0")}`;
     return {
       nama: "",
       kelas: "",
       situasi: "Saat Upacara",
-      tanggal: now.toISOString().split("T")[0],
-      jam: formattedJam,
+      tanggal: formatDateValue(now),
+      jam: formatTimeValue(now),
       keluhan: "",
       penanganan: "",
     };
@@ -44,6 +49,7 @@ export const CatatBaruPage: React.FC<CatatBaruPageProps> = ({ onSuccess }) => {
   const {
     register,
     handleSubmit,
+    control,
     setValue,
     watch,
     formState: { errors },
@@ -122,22 +128,44 @@ export const CatatBaruPage: React.FC<CatatBaruPageProps> = ({ onSuccess }) => {
           </div>
         </div>
 
-        <FormInput
-          label="Tanggal"
-          type="date"
-          icon={Calendar}
-          registration={register("tanggal", {
-            required: "Tanggal wajib diisi",
-          })}
-          error={errors.tanggal}
+        <Controller
+          name="tanggal"
+          control={control}
+          rules={{ required: "Tanggal wajib diisi" }}
+          render={({ field, fieldState }) => (
+            <FormDatePicker
+              label="Tanggal"
+              icon={Calendar}
+              name="tanggal"
+              value={field.value}
+              onChange={field.onChange}
+              onBlur={field.onBlur}
+              error={fieldState.error}
+            />
+          )}
         />
 
-        <FormInput
-          label="Jam kejadian"
-          icon={Clock}
-          placeholder="Contoh: 07.15"
-          registration={register("jam")}
-          error={errors.jam}
+        <Controller
+          name="jam"
+          control={control}
+          rules={{
+            validate: (value) =>
+              !value ||
+              /^([01]\d|2[0-3])[.:][0-5]\d$/.test(value.trim()) ||
+              "Format jam tidak valid (contoh: 07.15)",
+          }}
+          render={({ field, fieldState }) => (
+            <FormTimePicker
+              label="Jam kejadian"
+              icon={Clock}
+              name="jam"
+              placeholder="Contoh: 07.15"
+              value={field.value}
+              onChange={field.onChange}
+              onBlur={field.onBlur}
+              error={fieldState.error}
+            />
+          )}
         />
 
         <FormTextArea
