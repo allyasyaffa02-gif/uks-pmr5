@@ -247,7 +247,7 @@ Catatan:
    > ⚠️ Gunakan skema `mariadb://` (bukan `mysql://`) karena project ini menggunakan `@prisma/adapter-mariadb`.
    > Sesuaikan user, password, host, port, dan nama database dengan konfigurasi lokal Anda.
 
-4. **Generate Prisma Client & Jalankan Migrasi Database:**
+4. **Generate Prisma Client, Jalankan Migrasi Database & Seed Data Awal:**
 
    ```bash
    # Generate Prisma Client
@@ -255,7 +255,14 @@ Catatan:
 
    # Jalankan migrasi ke database
    npx prisma migrate dev --name init
+
+   # Jalankan seed data (kategori master & user admin awal: admin / uks-5-2026)
+   bun run prisma/seed.ts
+   # atau jika menggunakan npm / ts-node:
+   # npx ts-node prisma/seed.ts
    ```
+
+   > 💡 **Idempotent**: Seeder dapat dijalankan berulang kali dengan aman. Jika user `admin` sudah ada di database, seeder tidak akan menimpa password yang telah diganti.
 
 5. **Jalankan Server Backend (Development Mode):**
    Dengan Bun:
@@ -336,10 +343,13 @@ bun install            # atau: npm install
 # b) Generate Prisma Client → src/generated/prisma
 bun run prisma:generate   # atau: bunx prisma generate
 
-# c) Jalankan migrasi ke database tujuan
+# c) Jalankan migrasi ke database tujuan & seed data awal
 bunx prisma migrate deploy    # produksi (apply migrasi yang sudah ada)
 # atau saat mengembangkan skema baru:
 bun run prisma:migrate        # = prisma migrate dev
+
+# Jalankan seeder (kategori master "Saat Upacara" & "Hari Biasa" + user admin awal: admin / uks-5-2026)
+bun run prisma/seed.ts
 
 # d) Build TypeScript → dist/
 bun run build          # = nest build (hasil: dist/src/main.js)
@@ -416,6 +426,7 @@ Untuk pengembangan cepat, cukup jalankan `bun run dev` (Vite dev server + proxy 
 | Regenerate Prisma Client | `cd backend && bun run prisma:generate` |
 | Buat migrasi baru | `cd backend && bun run prisma:migrate` |
 | Terapkan migrasi | `cd backend && bunx prisma migrate deploy` |
+| Seed database (kategori & admin) | `cd backend && bun run prisma/seed.ts` |
 
 ### 4. Kombinasi: Database Saja via Docker
 
@@ -433,7 +444,23 @@ dan jalankan backend + frontend secara native seperti di atas. Container
 
 ## 📡 Ringkasan API Endpoints (Backend)
 
-Semua endpoint backend berpusat pada prefix `/api/uks`:
+### 🔐 Authentication (`/api/auth`)
+
+| Method | Endpoint                  | Deskripsi                                                                    |
+| :----- | :------------------------ | :--------------------------------------------------------------------------- |
+| `POST` | `/api/auth/login`          | Autentikasi user (returns data user: `id`, `username`, `isAdmin`)            |
+| `POST` | `/api/auth/logout`         | Logout user (stateless, frontend menghapus token/sesi lokal)                 |
+| `POST` | `/api/auth/reset-password`  | Reset password (lupa password): butuh `username` & `newPassword` (min 6 char)|
+| `POST` | `/api/auth/change-password` | Ganti password saat login: wajib `oldPassword` & `newPassword`               |
+
+> 🗝️ **Kredensial Awal Admin**:
+> - **Username**: `admin`
+> - **Password**: `uks-5-2026`
+> - Password disimpan menggunakan algoritma **scrypt** bawaan Node.js (`crypto.scrypt`) dengan format `scrypt$salt$hash`.
+
+---
+
+### 🏥 UKS Kasus & Rekap (`/api/uks`)
 
 | Method   | Endpoint             | Deskripsi                                                                    |
 | :------- | :------------------- | :--------------------------------------------------------------------------- |
