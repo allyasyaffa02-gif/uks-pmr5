@@ -43,3 +43,8 @@ export interface KategoriItem {
   id: number;
   name: string;
 }
+
+export interface ChipsItem {
+  label: string;
+  value: string;
+}
