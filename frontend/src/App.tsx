@@ -25,8 +25,8 @@ export const AppContent: React.FC = () => {
   // Belum login -> hanya tampilkan halaman login (termasuk lupa password).
   if (!isLoggedIn) {
     return (
-      <div className="flex w-full min-w-0 max-w-[1020px] justify-center">
-        <LoginPage />
+      <div className="bg-surface font-sans text-body-md text-on-surface antialiased min-h-screen flex items-center justify-center">
+        <LoginPage />;
       </div>
     );
   }
@@ -54,4 +54,3 @@ export const App: React.FC = () => {
 };
 
 export default App;
-
