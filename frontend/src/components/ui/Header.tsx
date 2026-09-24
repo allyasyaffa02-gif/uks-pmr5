@@ -1,42 +1,98 @@
-import React from 'react';
-import { HeartPulse, LogOut, User } from 'lucide-react';
-import { useAuth } from '../../modules/auth/hooks/useAuth';
+import React from "react";
+import { HeartPulse, LogOut, User } from "lucide-react";
+import { useAuth } from "../../modules/auth/hooks/useAuth";
 
 export const Header: React.FC = () => {
   const { user, logout } = useAuth();
 
   return (
-    <header className="flex flex-wrap items-center gap-4 rounded-card border border-line bg-glass p-6 shadow-card backdrop-blur-[16px]">
-      <div className="flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-[14px] bg-gradient-to-br from-primary to-primary-dark text-white shadow-icon">
-        <HeartPulse size={32} />
-      </div>
-      <div className="min-w-0 flex-1">
-        <h1 className="bg-gradient-to-b from-white to-slate-300 bg-clip-text text-[1.65rem] font-extrabold tracking-[-0.02em] text-transparent">
-          Catatan Kesehatan Siswa
-        </h1>
-        <p className="text-[0.9rem] font-medium text-ink-muted">
-          PMR — data siswa sakit saat upacara maupun hari biasa
-        </p>
-      </div>
-      {user && (
-        <div className="flex shrink-0 items-center gap-3">
-          <span className="flex items-center gap-1.5 rounded-field border border-line bg-slate-900/60 px-3 py-1.5 text-[0.82rem] font-semibold text-ink-muted">
-            <User size={14} />
-            {user.username}
-            {user.isAdmin ? " (admin)" : ""}
-          </span>
-          <button
-            type="button"
-            onClick={() => logout()}
-            title="Keluar dari aplikasi"
-            className="flex cursor-pointer items-center gap-1.5 rounded-field border border-line bg-transparent px-3 py-1.5 text-[0.82rem] font-semibold text-ink-muted transition-colors hover:border-red-400/40 hover:text-red-300"
-          >
-            <LogOut size={14} />
-            Keluar
-          </button>
+    <header className="fixed top-0 left-0 right-0 z-50 bg-surface-container-lowest shadow-[0_1px_8px_rgba(0,0,0,0.04)]">
+      <div className="h-20 max-w-7xl mx-auto px-gutter-desktop flex items-center justify-between gap-space-md">
+        <div className="flex items-center gap-space-md">
+          <div className="w-11 h-11 rounded-lg bg-primary-fixed flex items-center justify-center shadow-sm">
+            <span className="material-symbols-outlined text-primary text-[26px]">
+              medical_services
+            </span>
+          </div>
+          <div className="flex flex-col">
+            <span className="font-headline-md text-headline-md text-on-surface tracking-tight leading-tight">
+              Catatan Kesehatan Siswa
+            </span>
+            <span className="font-label-md text-label-md text-secondary tracking-normal">
+              PMR — Unit Kesehatan Sekolah (UKS)
+            </span>
+          </div>
         </div>
-      )}
+
+        <div className="flex items-center gap-space-lg">
+          <nav
+            className="hidden lg:flex items-center gap-space-sm"
+            data-active-classes="bg-primary-container text-on-primary-container font-semibold rounded-lg px-space-md py-space-sm"
+          >
+            {/* <a
+              aria-current="page"
+              className="transition-colors bg-primary-container text-on-primary-container font-semibold rounded-lg px-space-md py-space-sm"
+              data-path="dashboard-kesehatan"
+              href="#"
+            >
+              Buku Registrasi
+            </a>
+            <a
+              className="px-space-md py-space-sm rounded-lg font-label-lg text-label-lg text-on-surface-variant hover:text-on-surface transition-colors"
+              data-path="upacara-darurat"
+              href="#"
+            >
+              Pos Upacara
+            </a>
+            <a
+              className="px-space-md py-space-sm rounded-lg font-label-lg text-label-lg text-on-surface-variant hover:text-on-surface transition-colors"
+              data-path="inventaris-obat"
+              href="#"
+            >
+              Stok Obat
+            </a>
+            <a
+              className="px-space-md py-space-sm rounded-lg font-label-lg text-label-lg text-on-surface-variant hover:text-on-surface transition-colors"
+              data-path="laporan-rekam-medis"
+              href="#"
+            >
+              Rekap Medis
+            </a> */}
+          </nav>
+
+          <div className="hidden md:flex items-center gap-space-xs bg-surface-container-low px-space-md py-space-xs rounded-full shadow-[0_1px_3px_rgba(0,0,0,0.02)]">
+            <span className="w-2.5 h-2.5 rounded-full bg-primary animate-pulse"></span>
+            <span className="font-label-sm text-label-sm text-secondary font-semibold">
+              Posko Siaga UKS
+            </span>
+          </div>
+
+          {user && (
+            <div className="flex items-center gap-space-md">
+              <div className="flex items-center gap-space-sm bg-surface-container-low px-space-sm py-1 rounded-full">
+                <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center shadow-sm">
+                  <span className="material-symbols-outlined text-on-primary text-[18px]">
+                    person
+                  </span>
+                </div>
+                <span className="font-label-md text-label-md text-on-surface font-semibold pr-space-xs hidden sm:inline-block">
+                  {user.username} ({user.isAdmin ? "admin" : "user"})
+                </span>
+              </div>
+              <button
+                className="flex items-center gap-space-xs px-space-md py-space-sm rounded-lg font-label-lg text-label-lg text-secondary hover:bg-primary-fixed hover:text-primary transition-all"
+                data-path="login"
+                onClick={() => logout()}
+              >
+                <span className="material-symbols-outlined text-[20px]">
+                  logout
+                </span>
+                <span>Keluar</span>
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
     </header>
   );
 };
-

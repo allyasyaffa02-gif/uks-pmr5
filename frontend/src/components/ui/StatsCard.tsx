@@ -1,11 +1,20 @@
 import React from "react";
 import { useUksStats } from "../../modules/uks/hooks/useUksStats";
-import { Activity, Flag, Calendar } from "lucide-react";
+import { Icon } from "./Icons";
 
 const STAT_META = {
-  total: { icon: Activity, iconClass: "bg-primary/15 text-red-400" },
-  upacara: { icon: Flag, iconClass: "bg-amber-accent/15 text-amber-accent" },
-  harian: { icon: Calendar, iconClass: "bg-cyan-accent/15 text-cyan-accent" },
+  vital_signs: {
+    icon: null,
+    iconClass: "bg-primary-fixed text-on-secondary-fixed",
+  },
+  flag: {
+    icon: null,
+    iconClass: "bg-tertiary-fixed text-tertiary",
+  },
+  event_note: {
+    icon: null,
+    iconClass: "bg-secondary-fixed text-on-secondary-fixed",
+  },
 } as const;
 
 export const StatsCard: React.FC = () => {
@@ -13,36 +22,39 @@ export const StatsCard: React.FC = () => {
 
   const cards: { key: keyof typeof STAT_META; value: number; label: string }[] =
     [
-      { key: "total", value: stats.total, label: "Total kasus" },
-      { key: "upacara", value: stats.upacara, label: "Saat upacara" },
-      { key: "harian", value: stats.harian, label: "Hari biasa" },
+      { key: "vital_signs", value: stats.total, label: "Total kasus" },
+      { key: "flag", value: stats.upacara, label: "Saat upacara" },
+      { key: "event_note", value: stats.harian, label: "Hari biasa" },
     ];
 
-  return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-      {cards.map(({ key, value, label }) => {
-        const { icon: Icon, iconClass } = STAT_META[key];
-        return (
+  return cards.map(({ key, value, label }) => {
+    // Deklarasi variabel dilakukan sebelum return JSX
+    const { icon, iconClass } = STAT_META[key] || {};
+
+    return (
+      <div
+        key={key}
+        className="bg-surface-container-lowest rounded-xl p-space-md shadow-sm flex items-center justify-between transition-all hover:shadow-md"
+      >
+        <div className="flex items-center gap-space-md">
           <div
-            key={key}
-            className="flex items-center gap-4 rounded-box border border-line bg-glass p-[18px_20px] backdrop-blur-[12px] transition-[transform,border-color] duration-200 ease-[cubic-bezier(0.25,0.1,0.25,1)] hover:-translate-y-0.5 hover:border-white/[0.18]"
+            className={`w-12 h-12 rounded-xl flex items-center justify-center ${iconClass || ""}`}
           >
-            <div
-              className={`flex h-11 w-11 items-center justify-center rounded-[10px] ${iconClass}`}
-            >
-              <Icon size={22} />
+            <Icon name={icon || key} className="text-[26px]" />
+          </div>
+          <div>
+            <div className="font-headline-xl text-headline-xl text-on-surface block leading-none mb-1">
+              {isLoading ? "..." : value}
             </div>
-            <div>
-              <div className="text-[1.6rem] font-extrabold leading-[1.2] text-ink">
-                {isLoading ? "..." : value}
-              </div>
-              <div className="text-[0.82rem] font-semibold text-ink-muted">
-                {label}
-              </div>
+            <div className="font-label-md text-label-md text-secondary block font-semibold">
+              {label}
             </div>
           </div>
-        );
-      })}
-    </div>
-  );
+        </div>
+        {/* <span className="font-label-sm text-label-sm px-2 py-0.5 rounded-full bg-surface-container-low text-primary font-bold">
+          Hari Ini
+        </span> */}
+      </div>
+    );
+  });
 };
