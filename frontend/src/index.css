@@ -8,90 +8,110 @@
    yang terakhir menang. */
 @import "react-datepicker/dist/react-datepicker.css";
 
-/* ==========================================================================
-   Tema aplikasi (Tailwind CSS v4)
-   Token desain hasil konversi dari CSS custom lama ke namespace @theme
-   Tailwind, sehingga tersedia sebagai utility (mis. text-ink-muted,
-   bg-night, shadow-card) dan nilai visualnya identik dengan desain lama.
-   ========================================================================== */
+/*
+  Pengganti <script id="tailwind-config"> dari HTML asli.
+  Di Tailwind v4, theme didefinisikan lewat CSS (@theme).
+  Hanya token yang dipakai halaman login yang disertakan;
+  tambahkan token lain (tertiary, inverse-*, dll.) sesuai kebutuhan.
+*/
 @theme {
-  /* Font aplikasi (sebelumnya --font-family) */
-  --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
 
-  /* Warna latar & permukaan */
-  --color-night: #0b0f19;                  /* --bg-main */
-  --color-glass: rgba(19, 27, 46, 0.75);   /* --bg-glass */
-  --color-panel: rgba(15, 23, 42, 0.9);    /* bg th / tfoot */
-  --color-input: rgba(15, 23, 42, 0.7);    /* bg field form */
-  --color-line: rgba(255, 255, 255, 0.08); /* --border-glass */
-  --color-line-strong: rgba(255, 255, 255, 0.18);
+  /* Colors */
+  --color-primary: #b70011;
+  --color-primary-container: #dc2626;
+  --color-on-primary: #ffffff;
+  --color-secondary: #565e74;
+  --color-secondary-container: #dae2fd;
+  --color-surface: #f8f9ff;
+  --color-surface-container-lowest: #ffffff;
+  --color-surface-container-low: #eff4ff;
+  --color-surface-container-high: #dce9ff;
+  --color-on-surface: #0b1c30;
+  --color-error: #ba1a1a;
+  --color-error-container: #ffdad6;
+  --color-on-error-container: #93000a;
 
-  /* Warna aksen */
-  --color-primary: #e63946;                /* --primary */
-  --color-primary-deep: #c5221f;           /* ujung gradient tombol/tab aktif */
-  --color-primary-dark: #b71c1c;           /* ujung gradient ikon header */
-  --color-primary-glow: rgba(230, 57, 70, 0.35); /* --primary-glow */
+  --color-primary-fixed: #ffdad6;
+  --color-on-primary-container: #fff6f5;
+  --color-on-surface-variant: #5c403c;
+  --color-secondary-fixed: #dae2fd;
+  --color-on-secondary-fixed: #131b2e;
+  --color-tertiary: #894900;
+  --color-tertiary-fixed: #ffdcc3;
 
-  /* Warna teks */
-  --color-ink: #f1f5f9;                    /* --text-main */
-  --color-ink-muted: #94a3b8;              /* --text-muted */
-  --color-ink-dim: #64748b;                /* --text-dim */
-  --color-cyan-accent: #38bdf8;            /* --accent-cyan */
-  --color-amber-accent: #fbbf24;           /* --accent-amber */
+  /* Spacing bernama (dipakai sebagai p-space-md, px-gutter-desktop, dst.) */
+  --spacing-space-xs: 0.25rem;
+  --spacing-space-sm: 0.5rem;
+  --spacing-space-md: 1rem;
+  --spacing-space-lg: 1.5rem;
+  --spacing-space-xl: 2rem;
+  --spacing-gutter: 1rem;
+  --spacing-gutter-desktop: 1.5rem;
 
-  /* Radius sudut */
-  --radius-field: 8px;
-  --radius-box: 12px;
-  --radius-card: 16px;
-
-  /* Bayangan */
-  --shadow-card: 0 4px 12px rgba(0, 0, 0, 0.2);
-  --shadow-card-lg: 0 12px 32px rgba(0, 0, 0, 0.4);
-  --shadow-glow: 0 4px 14px rgba(230, 57, 70, 0.35);
-  --shadow-glow-lg: 0 6px 20px rgba(230, 57, 70, 0.35);
-  --shadow-icon: 0 4px 16px rgba(230, 57, 70, 0.35);
-
-  /* Samakan kurva default transisi Tailwind dengan `ease` pada desain lama */
-  --default-transition-timing-function: cubic-bezier(0.25, 0.1, 0.25, 1);
+  /* Type scale (ukuran + line-height + weight) */
+  --text-headline-xl: 32px;
+  --text-headline-xl--line-height: 40px;
+  --text-headline-xl--font-weight: 700;
+  --text-headline-lg: 24px;
+  --text-headline-lg--line-height: 32px;
+  --text-headline-lg--font-weight: 700;
+  --text-headline-md: 18px;
+  --text-headline-md--line-height: 26px;
+  --text-headline-md--font-weight: 600;
+  --text-label-lg: 14px;
+  --text-label-lg--line-height: 20px;
+  --text-label-lg--font-weight: 600;
+  --text-label-md: 12px;
+  --text-label-md--line-height: 16px;
+  --text-label-md--font-weight: 600;
+  --text-label-sm: 11px;
+  --text-label-sm--line-height: 14px;
+  --text-label-sm--font-weight: 600;
+  --text-body-md: 14px;
+  --text-body-md--line-height: 20px;
+  --text-body-md--font-weight: 400;
+  --text-body-sm: 12px;
+  --text-body-sm--line-height: 18px;
+  --text-body-sm--font-weight: 400;
 }
 
-/* ==========================================================================
-   Gaya global yang tidak praktis dipindah ke utility class per elemen
-   ========================================================================== */
-body {
-  background-color: var(--color-night);
-  background-image:
-    radial-gradient(at 0% 0%, rgba(230, 57, 70, 0.12) 0px, transparent 50%),
-    radial-gradient(at 100% 100%, rgba(56, 189, 248, 0.08) 0px, transparent 50%);
-  color: var(--color-ink);
-  font-family: var(--font-sans);
-  min-height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  padding: 32px 16px;
-  line-height: 1.5;
-  overflow-x: hidden;
+@layer base {
+  html,
+  body {
+    margin: 0;
+    padding: 0;
+  }
+  body {
+    overscroll-behavior: none;
+  }
 }
 
-#root {
-  width: 100%;
-  max-width: 100%;
-  min-width: 0;
-  display: flex;
-  justify-content: center;
+/* Sembunyikan scrollbar (sama seperti HTML asli) */
+::-webkit-scrollbar {
+  display: none;
 }
 
-/* ==========================================================================
-   react-datepicker — adaptasi tema gelap aplikasi
-   --------------------------------------------------------------------------
-   Kelas `pmr-datepicker*` dikirim dari FormDatePicker/FormTimePicker lewat
-   `calendarClassName`, `popperClassName`, dan `wrapperClassName`.
-   Setiap selector digabung dengan kelas bawaan library (mis.
-   `.react-datepicker.pmr-datepicker`) supaya menang secara spesifisitas:
-   styles sheet library bisa tertata sebelum/SESUDAH file ini di hasil build,
-   jadi tidak bisa mengandalkan urutan saja.
-   ========================================================================== */
+/* Material Symbols */
+.material-symbols-outlined {
+  /* Nama font-family bawaan dari paket @fontsource-variable */
+  font-family: "Material Symbols Outlined Variable", sans-serif !important;
+  font-weight: normal;
+  font-style: normal;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-smoothing: antialiased;
+  font-variation-settings:
+    "FILL" 0,
+    "wght" 400,
+    "GRAD" 0,
+    "opsz" 24;
+}
 
 /* Kontainer portal popper: keluar dari <main> yang overflow-hidden */
 #picker-portal {
@@ -128,27 +148,76 @@ body {
   overflow: hidden;
 }
 
+/*
+  Tema react-datepicker untuk desain baru (light, Material-style).
+  Struktur selector sama dengan versi lama; yang berubah hanya warna & tampilan.
+
+  Semua warna dipetakan di satu tempat (blok variabel --dp-* di bawah)
+  ke token @theme di styles.css, jadi kalau palet berubah cukup edit di sini.
+*/
+
+.pmr-datepicker {
+  --dp-bg: var(--color-surface-container-lowest);
+  --dp-header-bg: var(--color-surface-container-low);
+  --dp-input: var(--color-surface-container-low);
+  --dp-hover: var(--color-surface-container-high);
+  --dp-line: var(--color-surface-container-high);
+  --dp-line-strong: var(--color-surface-dim);
+  --dp-ink: var(--color-on-surface);
+  --dp-ink-muted: var(--color-secondary);
+  --dp-ink-dim: color-mix(in srgb, var(--color-secondary) 45%, transparent);
+  --dp-accent: var(--color-primary-container);
+  --dp-accent-strong: var(--color-primary);
+  --dp-on-accent: var(--color-on-primary-container);
+  --dp-accent-soft: var(--color-primary-fixed);
+  --dp-radius: 0.5rem;
+}
+
+/* Header tetap (fixed z-50) — popper harus di atasnya */
+.react-datepicker-popper {
+  z-index: 60;
+}
+
+/* Kotak kalender */
+.pmr-datepicker.react-datepicker,
+.pmr-datepicker .react-datepicker {
+  font-family: inherit;
+  background-color: var(--dp-bg);
+  color: var(--dp-ink);
+  border: 1px solid var(--dp-line);
+  border-radius: 0.75rem;
+  box-shadow: 0 12px 32px rgba(11, 28, 48, 0.12);
+}
+
+/* Segitiga penunjuk: warnanya mengikuti bidang yang disentuhnya */
 .pmr-datepicker .react-datepicker__triangle {
-  stroke: var(--color-line-strong);
-  fill: #101a2c;
-  color: #101a2c;
+  stroke: var(--dp-line);
+  fill: var(--dp-header-bg);
+  color: var(--dp-header-bg);
+}
+
+.pmr-datepicker[data-placement^="top"] .react-datepicker__triangle {
+  fill: var(--dp-bg);
+  color: var(--dp-bg);
 }
 
 /* Header (judul bulan/tahun) */
 .pmr-datepicker .react-datepicker__header,
 .pmr-datepicker .react-datepicker__header--time {
-  background-color: rgba(15, 23, 42, 0.9);
-  border-bottom: 1px solid var(--color-line);
+  background-color: var(--dp-header-bg);
+  border-bottom: 0;
+  border-top-left-radius: 0.65rem;
+  border-top-right-radius: 0.65rem;
 }
 
 .pmr-datepicker .react-datepicker__current-month,
 .pmr-datepicker .react-datepicker-time__header {
-  color: var(--color-ink);
+  color: var(--dp-ink);
 }
 
 .pmr-datepicker .react-datepicker__day-name {
   font-weight: 600;
-  color: var(--color-ink-muted);
+  color: var(--dp-ink-muted);
 }
 
 /* Tombol navigasi bulan & tahun */
@@ -157,11 +226,11 @@ body {
 }
 
 .pmr-datepicker .react-datepicker__navigation-icon::before {
-  border-color: var(--color-ink-dim);
+  border-color: var(--dp-ink-muted);
 }
 
 .pmr-datepicker .react-datepicker__navigation:hover *::before {
-  border-color: var(--color-ink);
+  border-color: var(--dp-ink);
 }
 
 /* Sel tanggal, bulan, dan tahun */
@@ -169,16 +238,17 @@ body {
 .pmr-datepicker .react-datepicker__month-text,
 .pmr-datepicker .react-datepicker__quarter-text,
 .pmr-datepicker .react-datepicker__year-text {
-  color: var(--color-ink);
-  border-radius: var(--radius-field);
+  color: var(--dp-ink);
+  border-radius: var(--dp-radius);
 }
 
-.pmr-datepicker .react-datepicker__day:not([aria-disabled=true]):hover,
-.pmr-datepicker .react-datepicker__month-text:not([aria-disabled=true]):hover,
-.pmr-datepicker .react-datepicker__quarter-text:not([aria-disabled=true]):hover,
-.pmr-datepicker .react-datepicker__year-text:not([aria-disabled=true]):hover {
-  background-color: rgba(255, 255, 255, 0.08);
-  color: #fff;
+.pmr-datepicker .react-datepicker__day:not([aria-disabled="true"]):hover,
+.pmr-datepicker .react-datepicker__month-text:not([aria-disabled="true"]):hover,
+.pmr-datepicker
+  .react-datepicker__quarter-text:not([aria-disabled="true"]):hover,
+.pmr-datepicker .react-datepicker__year-text:not([aria-disabled="true"]):hover {
+  background-color: var(--dp-hover);
+  color: var(--dp-ink);
 }
 
 .pmr-datepicker .react-datepicker__day--today,
@@ -186,36 +256,46 @@ body {
 .pmr-datepicker .react-datepicker__quarter-text--today,
 .pmr-datepicker .react-datepicker__year-text--today {
   font-weight: 700;
-  box-shadow: inset 0 0 0 1px var(--color-primary);
+  box-shadow: inset 0 0 0 1px var(--dp-accent-strong);
 }
 
 .pmr-datepicker .react-datepicker__day--keyboard-selected,
 .pmr-datepicker .react-datepicker__month-text--keyboard-selected,
 .pmr-datepicker .react-datepicker__quarter-text--keyboard-selected,
 .pmr-datepicker .react-datepicker__year-text--keyboard-selected {
-  background-color: rgba(230, 57, 70, 0.28);
-  color: #fff;
+  background-color: var(--dp-accent-soft);
+  color: var(--dp-accent-strong);
 }
 
-.pmr-datepicker .react-datepicker__day--selected:not([aria-disabled=true]):hover,
-.pmr-datepicker .react-datepicker__day--keyboard-selected:not([aria-disabled=true]):hover,
-.pmr-datepicker .react-datepicker__month-text--keyboard-selected:not([aria-disabled=true]):hover,
-.pmr-datepicker .react-datepicker__year-text--keyboard-selected:not([aria-disabled=true]):hover {
-  background-color: rgba(230, 57, 70, 0.45);
-  color: #fff;
+.pmr-datepicker
+  .react-datepicker__day--selected:not([aria-disabled="true"]):hover,
+.pmr-datepicker
+  .react-datepicker__day--keyboard-selected:not([aria-disabled="true"]):hover,
+.pmr-datepicker
+  .react-datepicker__month-text--keyboard-selected:not(
+    [aria-disabled="true"]
+  ):hover,
+.pmr-datepicker
+  .react-datepicker__year-text--keyboard-selected:not(
+    [aria-disabled="true"]
+  ):hover {
+  background-color: color-mix(in srgb, var(--dp-accent) 22%, var(--dp-bg));
+  color: var(--dp-accent-strong);
 }
 
 .pmr-datepicker .react-datepicker__day--selected,
 .pmr-datepicker .react-datepicker__month-text--selected,
 .pmr-datepicker .react-datepicker__quarter-text--selected,
 .pmr-datepicker .react-datepicker__year-text--selected {
-  background-color: var(--color-primary);
-  color: #fff;
+  background-color: var(--dp-accent);
+  color: var(--dp-on-accent);
   font-weight: 700;
 }
 
-.pmr-datepicker .react-datepicker__day--selected:not([aria-disabled=true]):hover {
-  background-color: var(--color-primary-deep);
+.pmr-datepicker
+  .react-datepicker__day--selected:not([aria-disabled="true"]):hover {
+  background-color: var(--dp-accent-strong);
+  color: var(--dp-on-accent);
 }
 
 .pmr-datepicker .react-datepicker__day--disabled,
@@ -223,43 +303,44 @@ body {
 .pmr-datepicker .react-datepicker__day--outside-month,
 .pmr-datepicker .react-datepicker__month-text--disabled,
 .pmr-datepicker .react-datepicker__year-text--disabled {
-  color: var(--color-ink-dim);
+  color: var(--dp-ink-dim);
   background-color: transparent;
 }
 
 /* Dropdown pemilih bulan & tahun (dropdownMode="select") */
 .pmr-datepicker select {
-  background-color: var(--color-input);
-  border: 1px solid var(--color-line-strong);
-  border-radius: var(--radius-field);
-  color: var(--color-ink);
+  background-color: var(--dp-input);
+  border: 1px solid var(--dp-line-strong);
+  border-radius: var(--dp-radius);
+  color: var(--dp-ink);
 }
 
 .pmr-datepicker option {
-  background-color: #101a2c;
-  color: var(--color-ink);
+  background-color: var(--dp-bg);
+  color: var(--dp-ink);
 }
 
 /* Tombol "Hari ini" */
 .pmr-datepicker .react-datepicker__today-button {
   background-color: transparent;
-  border-top: 1px solid var(--color-line);
-  color: var(--color-cyan-accent);
+  border-top: 1px solid var(--dp-line);
+  color: var(--dp-accent-strong);
+  font-weight: 600;
 }
 
 .pmr-datepicker .react-datepicker__today-button:hover {
-  background-color: rgba(255, 255, 255, 0.06);
-  color: #fff;
+  background-color: var(--dp-hover);
+  color: var(--dp-accent-strong);
 }
 
 /* ===== Dropdown bulan/tahun (dropdownMode="select") ===== */
 .pmr-datepicker .react-datepicker__month-select,
 .pmr-datepicker .react-datepicker__year-select,
 .pmr-datepicker .react-datepicker__month-year-select {
-  background-color: rgba(15, 23, 42, 0.9);
-  border: 1px solid var(--color-line-strong);
+  background-color: var(--dp-bg);
+  border: 1px solid var(--dp-line-strong);
   border-radius: 6px;
-  color: var(--color-ink);
+  color: var(--dp-ink);
   cursor: pointer;
   font-family: inherit;
   font-size: 0.8rem;
@@ -270,7 +351,7 @@ body {
 .pmr-datepicker .react-datepicker__month-select:focus-visible,
 .pmr-datepicker .react-datepicker__year-select:focus-visible,
 .pmr-datepicker .react-datepicker__month-year-select:focus-visible {
-  outline: 2px solid var(--color-primary);
+  outline: 2px solid var(--dp-accent);
   outline-offset: 1px;
 }
 
@@ -278,34 +359,32 @@ body {
 .pmr-datepicker .react-datepicker__year-dropdown,
 .pmr-datepicker .react-datepicker__month-dropdown,
 .pmr-datepicker .react-datepicker__month-year-dropdown {
-  background-color: rgba(15, 23, 42, 0.98);
-  border: 1px solid var(--color-line-strong);
-  color: var(--color-ink);
+  background-color: var(--dp-bg);
+  border: 1px solid var(--dp-line-strong);
+  color: var(--dp-ink);
 }
 
 .pmr-datepicker .react-datepicker__year-option:hover,
 .pmr-datepicker .react-datepicker__month-option:hover,
 .pmr-datepicker .react-datepicker__month-year-option:hover {
-  background-color: rgba(255, 255, 255, 0.08);
+  background-color: var(--dp-hover);
 }
 
 /* ===== Daftar jam (FormTimePicker & props showTimeSelect) ===== */
 .pmr-datepicker .react-datepicker__time-container {
-  border-left: 1px solid var(--color-line);
+  border-left: 1px solid var(--dp-line);
   width: 96px;
 }
 
 .pmr-datepicker .react-datepicker__header--time--only {
-  border-bottom: 1px solid var(--color-line);
+  border-bottom: 1px solid var(--dp-line);
 }
 
 /*
  * Selector daftar jam di library rantainya panjang, jadi ditiru lalu diberi
  * awalan .pmr-datepicker agar selalu menang.
  */
-.pmr-datepicker
-  .react-datepicker__time-container
-  .react-datepicker__time,
+.pmr-datepicker .react-datepicker__time-container .react-datepicker__time,
 .pmr-datepicker
   .react-datepicker__time-container
   .react-datepicker__time
@@ -319,7 +398,7 @@ body {
   .react-datepicker__time-box
   ul.react-datepicker__time-list
   li.react-datepicker__time-list-item {
-  color: var(--color-ink-muted);
+  color: var(--dp-ink-muted);
 }
 
 .pmr-datepicker
@@ -328,8 +407,8 @@ body {
   .react-datepicker__time-box
   ul.react-datepicker__time-list
   li.react-datepicker__time-list-item:hover {
-  background-color: rgba(255, 255, 255, 0.08);
-  color: #fff;
+  background-color: var(--dp-hover);
+  color: var(--dp-ink);
 }
 
 .pmr-datepicker
@@ -344,8 +423,8 @@ body {
   .react-datepicker__time-box
   ul.react-datepicker__time-list
   li.react-datepicker__time-list-item--selected:hover {
-  background-color: var(--color-primary);
-  color: #fff;
+  background-color: var(--dp-accent);
+  color: var(--dp-on-accent);
   font-weight: 700;
 }
 
@@ -355,22 +434,23 @@ body {
   .react-datepicker__time-box
   ul.react-datepicker__time-list
   li.react-datepicker__time-list-item--disabled {
-  color: var(--color-ink-dim);
+  color: var(--dp-ink-dim);
   background-color: transparent;
 }
 
-/* Scrollbar daftar jam */
+/* Scrollbar daftar jam (menimpa `::-webkit-scrollbar { display: none }` global) */
 .pmr-datepicker .react-datepicker__time-list {
   scrollbar-width: thin;
-  scrollbar-color: var(--color-line-strong) transparent;
+  scrollbar-color: var(--dp-line-strong) transparent;
 }
 
 .pmr-datepicker .react-datepicker__time-list::-webkit-scrollbar {
+  display: block;
   width: 8px;
 }
 
 .pmr-datepicker .react-datepicker__time-list::-webkit-scrollbar-thumb {
-  background-color: var(--color-line-strong);
+  background-color: var(--dp-line-strong);
   border-radius: 9999px;
 }
 
@@ -403,5 +483,3 @@ body {
   ul.react-datepicker__time-list {
   height: 216px;
 }
-
-
