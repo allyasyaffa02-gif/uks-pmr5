@@ -1,6 +1,7 @@
 import { NestFactory } from "@nestjs/core";
 import { ValidationPipe } from "@nestjs/common";
 import { AppModule } from "./app.module";
+import { TimeoutInterceptor } from "./common/interceptors/timeout.interceptors";
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -10,6 +11,8 @@ async function bootstrap() {
     origin: "*",
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS",
   });
+
+  app.useGlobalInterceptors(new TimeoutInterceptor());
 
   // Enable global validation pipe for DTO validation
   app.useGlobalPipes(

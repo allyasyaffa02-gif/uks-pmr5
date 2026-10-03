@@ -6,7 +6,8 @@
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
-    "build": "nest build",
+    "build": "prisma generate && nest build && node -e \"require('fs').cpSync('src/generated','dist/src/generated',{recursive:true})\"",
+    "vercel-build": "prisma generate && nest build && node -e \"require('fs').cpSync('src/generated','dist/src/generated',{recursive:true})\"",
     "format": "prettier --write \"src/**/*.ts\"",
     "start": "nest start",
     "start:dev": "bun run --watch src/main.ts",
