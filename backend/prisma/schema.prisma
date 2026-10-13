@@ -19,20 +19,62 @@ model MasterKategori {
 }
 
 model Pasien {
-  id         BigInt         @id @default(autoincrement())
-  name       String         @db.VarChar(100)
-  kelas      String         @db.VarChar(10)
-  kategoriId BigInt         @map("kategori_id")
-  kategori   MasterKategori @relation(fields: [kategoriId], references: [id])
-  date       DateTime       @db.Date
-  time       String         @db.VarChar(10)
-  keluhan    String         @db.Text
-  penanganan String         @db.Text
-  createdAt  DateTime       @default(now()) @map("created_at")
-  updatedAt  DateTime?      @updatedAt @map("updated_at")
-  deletedAt  DateTime?      @map("deleted_at")
+  id          BigInt         @id @default(autoincrement())
+  name        String         @db.VarChar(100)
+  kelas       String         @db.VarChar(10)
+  kategoriId  BigInt         @map("kategori_id")
+  kategori    MasterKategori @relation(fields: [kategoriId], references: [id])
+  date        DateTime       @db.Date
+  time        String         @db.VarChar(10)
+  keluhan     String         @db.Text
+  penanganan  String         @db.Text
+  createdAt   DateTime       @default(now()) @map("created_at")
+  updatedAt   DateTime?      @updatedAt @map("updated_at")
+  deletedAt   DateTime?      @map("deleted_at")
+  pasianObats Pasian_Obat[]
 
   @@map("pasien")
+}
+
+model Pasian_Obat {
+  id        BigInt    @id @default(autoincrement())
+  pasienId  BigInt    @map("pasien_id")
+  pasien    Pasien    @relation(fields: [pasienId], references: [id])
+  obatId    BigInt    @map("obat_id")
+  obat      Obat      @relation(fields: [obatId], references: [id])
+  jumlah    String    @db.VarChar(20)
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime? @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  @@map("pasian_obat")
+}
+
+model Obat {
+  id                BigInt             @id @default(autoincrement())
+  name              String             @db.VarChar(120)
+  tanggalBeli       DateTime           @db.Date
+  tanggalKadaluarsa DateTime           @db.Date
+  stok              BigInt             @default(0)
+  satuanId          BigInt             @map("satuan_id")
+  satuan            Master_Satuan_Obat @relation(fields: [satuanId], references: [id])
+  createdAt         DateTime           @default(now()) @map("created_at")
+  updatedAt         DateTime?          @updatedAt @map("updated_at")
+  deletedAt         DateTime?          @map("deleted_at")
+  pasianObats       Pasian_Obat[]
+
+  @@map("obat")
+}
+
+model Master_Satuan_Obat {
+  id        BigInt    @id @default(autoincrement())
+  name      String    @db.VarChar(20)
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime? @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+  obats     Obat[]
+
+  @@map("master_satuan_obat")
 }
 
 model User {
