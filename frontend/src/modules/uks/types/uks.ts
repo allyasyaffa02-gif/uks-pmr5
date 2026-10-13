@@ -1,3 +1,11 @@
+export interface KasusObatItem {
+  id: number;
+  obatId: number;
+  nama: string;
+  satuan?: string;
+  jumlah: string;
+}
+
 export interface KasusItem {
   id: number;
   nama: string;
@@ -8,7 +16,13 @@ export interface KasusItem {
   jam?: string;
   keluhan: string;
   penanganan: string;
+  obat?: KasusObatItem[];
   createdAt?: string;
+}
+
+export interface CreateKasusObatInput {
+  obatId: number;
+  jumlah: number;
 }
 
 export interface CreateKasusInput {
@@ -19,6 +33,7 @@ export interface CreateKasusInput {
   jam?: string;
   keluhan: string;
   penanganan: string;
+  obat?: CreateKasusObatInput[];
 }
 
 export interface KasusFilterParams {

@@ -40,6 +40,7 @@ export const DataSpreadsheetPage: React.FC = () => {
       "Situasi",
       "Keluhan",
       "Penanganan",
+      "Obat",
     ];
     const rows = kasusList.map((item: KasusItem) => [
       formatDate(item.tanggal),
@@ -49,6 +50,12 @@ export const DataSpreadsheetPage: React.FC = () => {
       item.situasi,
       item.keluhan,
       item.penanganan,
+      (item.obat ?? [])
+        .map(
+          (obat) =>
+            `${obat.nama} (${obat.jumlah}${obat.satuan ? ` ${obat.satuan}` : ""})`,
+        )
+        .join("; "),
     ]);
 
     const csvContent = [headers.map(toCsvValue).join(",")]
