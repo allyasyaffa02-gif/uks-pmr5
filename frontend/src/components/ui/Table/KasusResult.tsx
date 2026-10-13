@@ -1,4 +1,4 @@
-import { Calendar, Trash2 } from "lucide-react"; // TODO: sesuaikan path type milikmu
+import { Calendar, Pill, Trash2 } from "lucide-react"; // TODO: sesuaikan path type milikmu
 import { KasusItem } from "../../../modules/uks/types/uks";
 import { Column, DataTable } from "./Table";
 
@@ -122,6 +122,35 @@ export function KasusResults({
       cell: (item) => item.penanganan,
     },
     {
+      key: "obat",
+      header: "Obat",
+      minWidth: 160,
+      cellClassName: "max-w-[200px] break-words",
+      cell: (item) =>
+        item.obat && item.obat.length > 0 ? (
+          <ul className="flex flex-col gap-1">
+            {item.obat.map((obat) => (
+              <li
+                key={obat.id}
+                className="inline-flex items-center gap-1 text-body-sm text-on-surface"
+              >
+                <Pill size={14} className="text-primary shrink-0" />
+                <span>
+                  {obat.nama}
+                  <span className="text-secondary">
+                    {" "}
+                    × {obat.jumlah}
+                    {obat.satuan ? ` ${obat.satuan}` : ""}
+                  </span>
+                </span>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <span className="text-secondary italic">—</span>
+        ),
+    },
+    {
       key: "aksi",
       header: "Aksi",
       align: "center",
@@ -139,7 +168,7 @@ export function KasusResults({
       getRowKey={(item) => item.id}
       caption="Data kasus kesehatan siswa"
       emptyMessage="Belum ada kasus tercatat."
-      minTableWidth={700}
+      minTableWidth={860}
       className="bg-surface-container-lowest shadow-sm"
       renderMobileCard={(item) => (
         <div className="flex flex-col gap-space-sm rounded-xl bg-surface-container-lowest p-space-md shadow-sm">
@@ -182,6 +211,31 @@ export function KasusResults({
                 {item.penanganan}
               </p>
             </div>
+            {item.obat && item.obat.length > 0 && (
+              <div>
+                <p className="text-label-sm uppercase tracking-wider text-secondary">
+                  Obat
+                </p>
+                <ul className="flex flex-col gap-1">
+                  {item.obat.map((obat) => (
+                    <li
+                      key={obat.id}
+                      className="flex items-center gap-space-xs break-words text-body-md text-on-surface"
+                    >
+                      <Pill size={14} className="text-primary shrink-0" />
+                      <span>
+                        {obat.nama}
+                        <span className="text-secondary">
+                          {" "}
+                          × {obat.jumlah}
+                          {obat.satuan ? ` ${obat.satuan}` : ""}
+                        </span>
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
         </div>
       )}

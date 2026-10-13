@@ -1,3 +1,8 @@
+export interface ObatFormValue {
+  obatId: string;
+  jumlah: string;
+}
+
 export interface KasusFormValues {
   nama: string;
   kelas: string;
@@ -6,4 +11,5 @@ export interface KasusFormValues {
   jam?: string;
   keluhan: string;
   penanganan: string;
+  obat?: ObatFormValue[];
 }
