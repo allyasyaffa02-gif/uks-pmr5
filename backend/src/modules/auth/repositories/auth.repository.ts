@@ -11,6 +11,12 @@ export class AuthRepository {
     });
   }
 
+  async findUserById(id: bigint) {
+    return this.prisma.user.findFirst({
+      where: { id, deletedAt: null },
+    });
+  }
+
   async updatePasswordById(id: bigint, hashedPassword: string) {
     return this.prisma.user.update({
       where: { id },
