@@ -84,8 +84,8 @@ export const DataSpreadsheetPage: React.FC = () => {
   };
 
   return (
-    <div className="bg-surface-container-lowest rounded-xl shadow-sm p-space-lg">
-      <div className="p-space-md bg-surface-container-lowest flex flex-col md:flex-row items-stretch md:items-center justify-between gap-space-md">
+    <div className="bg-surface-container-lowest rounded-xl shadow-sm p-space-md sm:p-space-lg">
+      <div className="px-space-md py-space-md sm:p-space-md bg-surface-container-lowest flex flex-col md:flex-row items-stretch md:items-center justify-between gap-space-md">
         <div className="relative flex-1 max-w-xl">
           <Search
             size={18}

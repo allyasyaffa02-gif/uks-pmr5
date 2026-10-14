@@ -87,11 +87,14 @@ export const CatatBaruPage: React.FC<CatatBaruPageProps> = ({ onSuccess }) => {
     defaultValues: getInitialValues(),
   });
 
-  const { fields: obatFields, append: appendObat, remove: removeObat } =
-    useFieldArray<KasusFormValues>({
-      control,
-      name: "obat",
-    });
+  const {
+    fields: obatFields,
+    append: appendObat,
+    remove: removeObat,
+  } = useFieldArray<KasusFormValues>({
+    control,
+    name: "obat",
+  });
 
   const situasiValue = watch("situasi");
   const obatValues = watch("obat") ?? [];
@@ -394,6 +397,9 @@ export const CatatBaruPage: React.FC<CatatBaruPageProps> = ({ onSuccess }) => {
                               >
                                 {item.name}
                                 {item.satuan ? ` (${item.satuan})` : ""}
+                                {item.tanggalKadaluarsa
+                                  ? ` - (Tanggal Kadaluarsa: ${item.tanggalKadaluarsa})`
+                                  : ""}
                                 {dipakaiBarisLain
                                   ? " - sudah dipilih"
                                   : item.stok !== undefined

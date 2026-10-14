@@ -38,8 +38,8 @@ export const RekapKelasPage: React.FC = () => {
   };
 
   return (
-    <div className="bg-surface-container-lowest rounded-xl shadow-sm p-space-lg">
-      <div className="p-space-lg flex flex-col sm:flex-row sm:items-center justify-between gap-space-md bg-surface-container-low/50">
+    <div className="bg-surface-container-lowest rounded-xl shadow-sm p-space-md sm:p-space-lg">
+      <div className="px-space-md py-space-md sm:p-space-lg flex flex-col sm:flex-row sm:items-center justify-between gap-space-md bg-surface-container-low/50 rounded-lg">
         <div className="flex items-center gap-space-sm text-secondary">
           <div className="w-8 h-8 rounded-full bg-surface-container-high flex items-center justify-center shrink-0 text-on-surface-variant">
             <span className="material-symbols-outlined text-[18px]">info</span>
