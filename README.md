@@ -473,6 +473,69 @@ dan jalankan backend + frontend secara native seperti di atas. Container
 
 ---
 
+### 💊 Master Obat (`/api/obat`)
+
+| Method   | Endpoint             | Deskripsi                                                                                    |
+| :------- | :------------------- | :------------------------------------------------------------------------------------------- |
+| `GET`    | `/api/obat/satuan`   | Mengambil master daftar satuan obat                                                          |
+| `GET`    | `/api/obat`          | Mengambil daftar obat (dukungan `search` & `status`: `low_stock`, `expiring_soon`, `expired`) |
+| `GET`    | `/api/obat/template` | Mengunduh template import obat (`.xlsx`)                                                     |
+| `POST`   | `/api/obat/import`   | Import data obat dari file Excel (`multipart/form-data`, field `file`)                        |
+| `GET`    | `/api/obat/:id`      | Mengambil detail satu obat                                                                   |
+| `POST`   | `/api/obat`          | Menambahkan obat baru                                                                        |
+| `PUT`    | `/api/obat/:id`      | Mengubah data obat                                                                           |
+| `DELETE` | `/api/obat/:id`      | Menghapus (soft delete) obat berdasarkan ID                                                   |
+
+#### 📥 Import Excel
+
+Tombol **Download Template** dan **Upload Excel** tersedia di halaman *Master Data Obat*.
+Setelah diunggah, hasilnya ditampilkan per baris (jumlah berhasil, jumlah gagal, dan
+alasan kegagalan tiap baris).
+
+Kolom template (sheet `Data Obat`, baris judul di baris ke-1):
+
+| Kolom                 | Keterangan                                                                          |
+| :-------------------- | :---------------------------------------------------------------------------------- |
+| `Nama Obat`           | Wajib. Maksimal 120 karakter.                                                       |
+| `Tanggal Beli`        | Wajib. Format `DD/MM/YYYY` (format `YYYY-MM-DD` juga diterima).                     |
+| `Tanggal Kadaluarsa`  | Wajib. Format `DD/MM/YYYY`.                                                         |
+| `Stok`                | Wajib. Bilangan bulat >= 0 (maksimal 1.000.000).                                     |
+| `Satuan`              | Wajib. Harus salah satu satuan pada master satuan obat (tersedia dropdown di template). |
+
+Aturan pemrosesan:
+
+- Baris kosong diabaikan, maksimal 1.000 baris data per file, dan ukuran file maksimal 5 MB.
+- Baris yang tidak valid **tidak** membatalkan baris lainnya: baris valid tetap tersimpan,
+  baris gagal dilaporkan beserta alasannya.
+- Satuan kosong atau tidak terdaftar dihitung **gagal** (tanpa nilai default dan tanpa
+  membuat satuan baru).
+- Baris yang berhasil selalu **ditambahkan** sebagai data obat baru; data dengan nama sama
+  tidak digabung atau ditimpa.
+
+Contoh respons `POST /api/obat/import`:
+
+```json
+{
+  "status": 200,
+  "message": "Import selesai: 2 baris berhasil, 1 baris gagal",
+  "data": {
+    "summary": { "total": 3, "success": 2, "failed": 1, "skipped": 0 },
+    "rows": [
+      { "row": 2, "name": "Paracetamol", "status": "success", "message": "Berhasil disimpan" },
+      { "row": 3, "name": "Amoxicillin", "status": "success", "message": "Berhasil disimpan" },
+      {
+        "row": 4,
+        "name": "Betadine",
+        "status": "failed",
+        "message": "Satuan \"Botol Kaca\" tidak terdaftar. Satuan yang tersedia: Tablet, Kapsul, Sirup"
+      }
+    ]
+  }
+}
+```
+
+---
+
 ## 📄 Lisensi
 
 Project ini dikembangkan untuk kebutuhan manajemen Usaha Kesehatan Sekolah (UKS) & Palang Merah Remaja (PMR).
