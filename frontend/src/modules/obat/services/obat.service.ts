@@ -5,6 +5,7 @@ import {
   UpdateObatInput,
   ObatFilterParams,
   SatuanObatItem,
+  ImportObatResult,
 } from "../types/obat";
 
 export const getSatuanObatApi = async (): Promise<SatuanObatItem[]> => {
@@ -71,3 +72,36 @@ export const deleteObatApi = async (
   }
 };
 
+/** Unduh template import obat (.xlsx) dari backend sebagai Blob. */
+export const downloadObatTemplateApi = async (): Promise<Blob> => {
+  try {
+    const response = await apiClient.get<Blob>("/obat/template", {
+      responseType: "blob",
+      timeout: 30000,
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Gagal mengunduh template import obat", error);
+    throw error;
+  }
+};
+
+/** Unggah file Excel untuk import obat; hasil per baris dikembalikan backend. */
+export const importObatApi = async (file: File): Promise<ImportObatResult> => {
+  const formData = new FormData();
+  formData.append("file", file);
+
+  try {
+    const response = await apiClient.post<any>("/obat/import", formData, {
+      // proses import bisa lebih lama dari request biasa
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+      timeout: 60000,
+    });
+    return response.data?.data ?? response.data;
+  } catch (error) {
+    console.error("Gagal mengimport data obat", error);
+    throw error;
+  }
+};

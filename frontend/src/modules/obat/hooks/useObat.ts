@@ -4,6 +4,7 @@ import {
   createObatApi,
   updateObatApi,
   deleteObatApi,
+  importObatApi,
 } from "../services/obat.service";
 import {
   ObatFilterParams,
@@ -40,6 +41,15 @@ export function useObat(filter?: ObatFilterParams) {
 
   const deleteMutation = useMutation({
     mutationFn: (id: number) => deleteObatApi(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: OBAT_QUERY_KEY });
+    },
+  });
+
+  // Import Excel: hasil per baris dikembalikan ke pemanggil untuk ditampilkan,
+  // sedangkan daftar obat di-refresh bila ada baris yang berhasil disimpan.
+  const importMutation = useMutation({
+    mutationFn: (file: File) => importObatApi(file),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: OBAT_QUERY_KEY });
     },
@@ -85,5 +95,7 @@ export function useObat(filter?: ObatFilterParams) {
     isUpdating: updateMutation.isPending,
     deleteObat: deleteMutation.mutateAsync,
     isDeleting: deleteMutation.isPending,
+    importObat: importMutation.mutateAsync,
+    isImporting: importMutation.isPending,
   };
 }

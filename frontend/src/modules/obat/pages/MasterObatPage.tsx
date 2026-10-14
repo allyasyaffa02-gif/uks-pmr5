@@ -3,6 +3,8 @@ import { Header } from "../../../components/ui/Header";
 import { useObat } from "../hooks/useObat";
 import { ObatItem, CreateObatInput, ObatFilterStatus } from "../types/obat";
 import { ObatModal } from "../components/ObatModal";
+import { ObatImportModal } from "../components/ObatImportModal";
+import { downloadObatTemplateApi } from "../services/obat.service";
 import {
   Pill,
   Search,
@@ -14,12 +16,30 @@ import {
   Package,
   Layers,
   Calendar,
+  Download,
+  Upload,
+  Loader2,
   X,
   RefreshCw,
 } from "lucide-react";
 import { useDebounce } from "../../../hooks/useDebounce";
 
 const MIN_SEARCH_LENGTH = 3;
+
+/** Nama file template import obat yang diunduh pengguna. */
+const OBAT_TEMPLATE_FILENAME = "template-import-obat.xlsx";
+
+/** Simpan Blob hasil unduhan sebagai file di perangkat pengguna. */
+function saveBlobAsFile(blob: Blob, filename: string) {
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+}
 
 export const MasterObatPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -33,6 +53,9 @@ export const MasterObatPage: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingObat, setEditingObat] = useState<ObatItem | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<ObatItem | null>(null);
+  const [isImportOpen, setIsImportOpen] = useState(false);
+  const [isDownloadingTemplate, setIsDownloadingTemplate] = useState(false);
+  const [templateError, setTemplateError] = useState<string | null>(null);
 
   const {
     obatList,
@@ -41,9 +64,11 @@ export const MasterObatPage: React.FC = () => {
     createObat,
     updateObat,
     deleteObat,
+    importObat,
     isCreating,
     isUpdating,
     isDeleting,
+    isImporting,
     refetch,
   } = useObat({
     search: effectiveSearch,
@@ -111,13 +136,38 @@ export const MasterObatPage: React.FC = () => {
     }
   };
 
+  /**
+   * Unduh template import obat. Mengembalikan pesan kesalahan (atau null bila
+   * berhasil) supaya pemanggil bisa menampilkannya di tempat yang sesuai.
+   */
+  const handleDownloadTemplate = async (): Promise<string | null> => {
+    if (isDownloadingTemplate) return null;
+
+    setIsDownloadingTemplate(true);
+    setTemplateError(null);
+
+    try {
+      const blob = await downloadObatTemplateApi();
+      saveBlobAsFile(blob, OBAT_TEMPLATE_FILENAME);
+      return null;
+    } catch (error) {
+      console.error("Gagal mengunduh template import obat", error);
+      const message =
+        "Gagal mengunduh template. Pastikan Anda masih login, lalu coba lagi.";
+      setTemplateError(message);
+      return message;
+    } finally {
+      setIsDownloadingTemplate(false);
+    }
+  };
+
   return (
     <div className="bg-surface font-body-md text-on-surface antialiased min-h-screen flex flex-col">
       {/* Header Aplikasi Terpadu */}
       <Header />
 
-      <main className="w-full pt-20 bg-surface flex-1">
-        <div className="flex flex-col w-full max-w-7xl mx-auto px-gutter-desktop py-space-lg space-y-space-lg">
+      <main className="w-full flex-1 bg-surface">
+        <div className="flex flex-col w-full max-w-7xl mx-auto px-gutter py-space-lg space-y-space-lg sm:px-gutter-desktop">
           {/* Header Judul Halaman */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="flex items-center gap-3">
@@ -135,7 +185,7 @@ export const MasterObatPage: React.FC = () => {
               </div>
             </div>
 
-            <div className="flex items-center gap-2.5">
+            <div className="flex flex-wrap items-center gap-2.5">
               <button
                 onClick={() => refetch()}
                 title="Muat Ulang Data"
@@ -147,6 +197,29 @@ export const MasterObatPage: React.FC = () => {
                 />
               </button>
               <button
+                onClick={async () => {
+                  await handleDownloadTemplate();
+                }}
+                disabled={isDownloadingTemplate}
+                title="Unduh Template Excel"
+                className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-label-lg text-label-lg border border-black/10 bg-surface-container-lowest text-secondary hover:text-on-surface hover:bg-surface-container-low transition-colors shadow-xs cursor-pointer disabled:opacity-50"
+              >
+                {isDownloadingTemplate ? (
+                  <Loader2 size={18} className="animate-spin" />
+                ) : (
+                  <Download size={18} />
+                )}
+                <span className="hidden sm:inline">Download Template</span>
+              </button>
+              <button
+                onClick={() => setIsImportOpen(true)}
+                title="Import Data Obat dari Excel"
+                className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-label-lg text-label-lg border border-primary/30 bg-primary-container/15 text-primary hover:bg-primary-container/30 transition-colors shadow-xs cursor-pointer"
+              >
+                <Upload size={18} />
+                <span className="hidden sm:inline">Upload Excel</span>
+              </button>
+              <button
                 onClick={handleOpenAdd}
                 className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-label-lg text-label-lg bg-primary-container text-on-primary-container hover:bg-primary shadow-md hover:shadow-lg transition-all cursor-pointer"
               >
@@ -155,6 +228,24 @@ export const MasterObatPage: React.FC = () => {
               </button>
             </div>
           </div>
+
+          {templateError && (
+            <div className="flex items-start justify-between gap-3 rounded-xl bg-error/10 border border-error/20 px-4 py-3">
+              <div className="flex items-start gap-2">
+                <AlertTriangle size={16} className="text-error shrink-0 mt-0.5" />
+                <p className="font-body-sm text-body-sm text-error">
+                  {templateError}
+                </p>
+              </div>
+              <button
+                onClick={() => setTemplateError(null)}
+                title="Tutup pesan"
+                className="p-1 rounded-md text-error hover:bg-error/10 transition-colors"
+              >
+                <X size={14} />
+              </button>
+            </div>
+          )}
 
           {/* Metric Summary Cards */}
           <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-space-md">
@@ -258,7 +349,7 @@ export const MasterObatPage: React.FC = () => {
             </div>
 
             {/* Filter Pills */}
-            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 md:pb-0">
+            <div className="flex w-full min-w-0 items-center gap-1.5 overflow-x-auto pb-1 md:w-auto md:max-w-full md:pb-0">
               <button
                 onClick={() => setActiveFilter("all")}
                 className={`px-3 py-1.5 rounded-xl text-label-md transition-all whitespace-nowrap cursor-pointer ${
@@ -506,6 +597,16 @@ export const MasterObatPage: React.FC = () => {
         onSubmit={handleSaveObat}
         initialData={editingObat}
         isLoading={isCreating || isUpdating}
+      />
+
+      {/* Modal Import Excel (download template + upload) */}
+      <ObatImportModal
+        isOpen={isImportOpen}
+        onClose={() => setIsImportOpen(false)}
+        onImport={importObat}
+        onDownloadTemplate={handleDownloadTemplate}
+        isImporting={isImporting}
+        isDownloadingTemplate={isDownloadingTemplate}
       />
 
       {/* Delete Confirmation Modal */}
