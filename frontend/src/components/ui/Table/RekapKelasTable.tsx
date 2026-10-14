@@ -112,7 +112,7 @@ export function RekapKelasTable({
           className={`inline-flex h-8 min-w-[32px] items-center justify-center rounded-lg px-2.5 text-body-lg font-bold ${
             isTop(r)
               ? "bg-primary-fixed text-primary"
-              : "bg-surface-container text-on-surface"
+              : "bg-surface-container-low text-on-surface"
           }`}
         >
           {r.upacara + r.harian}
@@ -168,7 +168,7 @@ export function RekapKelasTable({
         const pB = pct(r.harian, total);
         return (
           <div className="flex w-full max-w-[220px] flex-col gap-1">
-            <div className="flex h-2.5 w-full overflow-hidden rounded-full bg-surface-container">
+            <div className="flex h-2.5 w-full overflow-hidden rounded-full bg-surface-container-low">
               <div
                 className="h-full bg-secondary-container transition-all duration-500"
                 style={{ width: `${pU}%` }}
@@ -203,23 +203,39 @@ export function RekapKelasTable({
       minTableWidth={640}
       className={className}
       renderMobileCard={(r) => (
-        <div className="flex items-center justify-between gap-space-sm rounded-xl bg-surface-container-lowest p-space-md shadow-sm">
-          <div className="flex min-w-0 items-center gap-space-sm">
-            <span
-              className={`h-2 w-2 shrink-0 rounded-full ${
-                isTop(r) ? "bg-primary-container" : "bg-secondary/40"
-              }`}
-            />
-            <div className="min-w-0">
-              <div className="text-label-sm uppercase tracking-wider text-secondary">
-                Kelas
+        <div className="flex flex-col gap-space-sm rounded-xl bg-surface-container-lowest p-space-md shadow-sm">
+          {/* Baris 1: nama kelas + badge total (tidak lagi terpotong) */}
+          <div className="flex items-start justify-between gap-space-sm">
+            <div className="flex min-w-0 items-start gap-space-sm">
+              <span
+                className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${
+                  isTop(r) ? "bg-primary-container" : "bg-secondary/40"
+                }`}
+              />
+              <div className="min-w-0">
+                <div className="text-label-sm uppercase tracking-wider text-secondary">
+                  Kelas
+                </div>
+                <div className="break-words text-headline-md leading-snug tracking-tight text-on-surface">
+                  {r.kelas}
+                </div>
               </div>
-              <div className="truncate text-headline-md tracking-tight text-on-surface">
-                {r.kelas}
+            </div>
+            <div
+              className={`shrink-0 rounded-lg px-2.5 py-1 text-center ${
+                isTop(r)
+                  ? "bg-primary-fixed text-primary"
+                  : "bg-surface-container-low text-on-surface"
+              }`}
+            >
+              <div className="text-label-sm">Total</div>
+              <div className="text-body-lg font-bold">
+                {r.upacara + r.harian}
               </div>
             </div>
           </div>
-          <div className="flex items-center gap-space-md">
+          {/* Baris 2: rincian upacara/harian dalam grid agar tidak meluber */}
+          <div className="grid grid-cols-2 gap-space-sm border-t border-surface-container-low pt-space-sm">
             <MiniStat
               label="Upacara"
               value={r.upacara}
@@ -230,28 +246,16 @@ export function RekapKelasTable({
               value={r.harian}
               className="text-secondary"
             />
-            <div
-              className={`rounded-lg px-2.5 py-1 text-center ${
-                isTop(r)
-                  ? "bg-primary-fixed text-primary"
-                  : "bg-surface-container text-on-surface"
-              }`}
-            >
-              <div className="text-label-sm">Total</div>
-              <div className="text-body-lg font-bold">
-                {r.upacara + r.harian}
-              </div>
-            </div>
           </div>
         </div>
       )}
       mobileFooter={
-        <div className="flex flex-wrap items-center justify-between gap-space-sm rounded-xl bg-surface-container-high/60 p-space-md font-semibold text-on-surface">
+        <div className="flex flex-col gap-space-sm rounded-xl bg-surface-container-high/60 p-space-md font-semibold text-on-surface sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
           <div className="flex items-center gap-space-xs">
             <Sigma size={18} className="text-primary" />
             <span className="text-headline-md">Total Keseluruhan</span>
           </div>
-          <div className="flex items-center gap-space-md">
+          <div className="grid grid-cols-3 items-center gap-space-md">
             <MiniStat
               label="Upacara"
               value={totals.upacara}

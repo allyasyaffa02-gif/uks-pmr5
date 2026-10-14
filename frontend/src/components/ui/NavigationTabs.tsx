@@ -8,57 +8,58 @@ interface NavigationTabsProps {
   onTabChange: (tab: TabType) => void;
 }
 
+/**
+ * Navigasi tab utama.
+ *
+ * Grid 2 kolom di mobile (ikon di atas label supaya label dapat lebar penuh
+ * dan tidak terpotong) lalu menjadi 4 kolom sejajar mulai `sm`.
+ */
 export const NavigationTabs: React.FC<NavigationTabsProps> = ({
   activeTab,
   onTabChange,
 }) => {
   const baseTabClass =
-    "flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-field border-none px-4 py-3 text-[0.9rem] font-semibold transition-all duration-200 ease-[cubic-bezier(0.25,0.1,0.25,1)]";
+    "flex min-w-0 cursor-pointer flex-col items-center justify-center gap-1 rounded-xl px-2 py-2.5 text-center text-[0.8rem] font-semibold leading-tight transition-all duration-200 ease-[cubic-bezier(0.25,0.1,0.25,1)] sm:flex-row sm:gap-2 sm:px-4 sm:py-3 sm:text-[0.9rem]";
 
   const inactiveClass =
-    "flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-label-lg text-label-lg text-secondary hover:text-on-surface hover:bg-surface-container-low transition-colors flex-1 min-w-[150px]";
+    "text-secondary hover:bg-surface-container-low hover:text-on-surface";
   const activeClass =
-    "flex items-center gap-space-xs px-space-md py-2.5 rounded-lg bg-primary-container text-on-primary-container font-label-lg text-label-lg shadow-sm transition-all focus:outline-none";
+    "bg-primary-container text-on-primary-container font-semibold shadow-sm focus:outline-none";
+
+  const tabClass = (isActive: boolean) =>
+    `${baseTabClass} ${isActive ? activeClass : inactiveClass}`;
 
   return (
-    <nav className="bg-surface-container-lowest p-1.5 rounded-2xl shadow-sm flex flex-wrap sm:flex-nowrap items-center gap-1.5 overflow-x-auto">
+    <nav className="grid grid-cols-2 gap-1.5 rounded-2xl bg-surface-container-lowest p-1.5 shadow-sm sm:grid-cols-4">
       <button
-        className={`${baseTabClass} ${
-          activeTab === "input" ? activeClass : inactiveClass
-        }`}
+        className={tabClass(activeTab === "input")}
         onClick={() => onTabChange("input")}
       >
-        <PlusCircle size={18} />
+        <PlusCircle size={18} className="shrink-0" />
         <span>Catat Baru</span>
       </button>
 
       <button
-        className={`${baseTabClass} ${
-          activeTab === "data" ? activeClass : inactiveClass
-        }`}
+        className={tabClass(activeTab === "data")}
         onClick={() => onTabChange("data")}
       >
-        <Table size={18} />
+        <Table size={18} className="shrink-0" />
         <span>Data (Spreadsheet)</span>
       </button>
 
       <button
-        className={`${baseTabClass} ${
-          activeTab === "rekap" ? activeClass : inactiveClass
-        }`}
+        className={tabClass(activeTab === "rekap")}
         onClick={() => onTabChange("rekap")}
       >
-        <BarChart3 size={18} />
+        <BarChart3 size={18} className="shrink-0" />
         <span>Rekap per Kelas</span>
       </button>
 
       <button
-        className={`${baseTabClass} ${
-          activeTab === "password" ? activeClass : inactiveClass
-        }`}
+        className={tabClass(activeTab === "password")}
         onClick={() => onTabChange("password")}
       >
-        <KeyRound size={18} />
+        <KeyRound size={18} className="shrink-0" />
         <span>Ganti Password</span>
       </button>
     </nav>

@@ -17,12 +17,12 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
   const currentYear = new Date().getFullYear();
 
   return (
-    <div className="bg-surface font-body-md text-on-surface antialiased">
+    <div className="flex min-h-screen flex-col bg-surface font-body-md text-on-surface antialiased">
       {/* Header Utama Aplikasi */}
       <Header />
 
-      <main className="w-full pt-20 bg-surface min-h-[calc(100vh-80px)]">
-        <div className="flex flex-col w-full max-w-7xl mx-auto px-gutter-desktop py-space-lg space-y-space-lg">
+      <main className="w-full flex-1 bg-surface">
+        <div className="flex flex-col w-full max-w-7xl mx-auto px-gutter py-space-lg space-y-space-lg sm:px-gutter-desktop">
           <section className="grid grid-cols-1 md:grid-cols-3 gap-space-md">
             {/* Ringkasan Statistik */}
             <StatsCard />
