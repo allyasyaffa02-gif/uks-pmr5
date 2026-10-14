@@ -8,6 +8,23 @@ export interface LoginResponse {
   success: boolean;
   message: string;
   user: AuthUser;
+  /** access token JWT; disimpan di cookie aman oleh tokenStorage */
+  accessToken: string;
+  /** umur access token dalam detik */
+  expiresIn: number;
+}
+
+export interface RefreshResponse {
+  success: boolean;
+  message: string;
+  user: AuthUser;
+  accessToken: string;
+  expiresIn: number;
+}
+
+export interface MeResponse {
+  success: boolean;
+  user: AuthUser;
 }
 
 export interface AuthMessageResponse {
@@ -26,7 +43,6 @@ export interface ResetPasswordInput {
 }
 
 export interface ChangePasswordInput {
-  username: string;
   oldPassword: string;
   newPassword: string;
 }
