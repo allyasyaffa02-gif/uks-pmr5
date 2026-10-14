@@ -86,5 +86,32 @@ model User {
   updatedAt DateTime? @updatedAt @map("updated_at")
   deletedAt DateTime? @map("deleted_at")
 
+  sessions  UserSession[]
+
   @@map("users")
+}
+
+/// Satu baris = satu sesi login (satu refresh token yang masih hidup).
+/// `id` sengaja berupa string acak (bukan autoincrement) supaya id sesi sudah
+/// bisa ditanam di dalam JWT sebelum barisnya dibuat - tidak perlu insert dulu
+/// lalu update, dan id-nya tidak bisa ditebak.
+/// Refresh token disimpan dalam bentuk hash SHA-256, bukan token aslinya,
+/// sehingga bocornya isi tabel tidak langsung memberi akses ke akun.
+/// `expires_at` digeser maju setiap kali token di-rotate (sliding 3 hari).
+model UserSession {
+  id               String    @id @db.VarChar(32)
+  userId           BigInt    @map("user_id")
+  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  refreshTokenHash String    @map("refresh_token_hash") @db.VarChar(64)
+  userAgent        String?   @map("user_agent") @db.VarChar(255)
+  ipAddress        String?   @map("ip_address") @db.VarChar(64)
+  expiresAt        DateTime  @map("expires_at")
+  revokedAt        DateTime? @map("revoked_at")
+  lastUsedAt       DateTime  @default(now()) @map("last_used_at")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime? @updatedAt @map("updated_at")
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("user_sessions")
 }

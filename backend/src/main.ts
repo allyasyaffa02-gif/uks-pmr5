@@ -6,10 +6,20 @@ import { TimeoutInterceptor } from "./common/interceptors/timeout.interceptors";
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  // Enable CORS for React frontend
+  // Refresh token disimpan sebagai cookie httpOnly, jadi CORS wajib memakai
+  // credentials. Karena itu origin tidak boleh "*" - browser menolak kombinasi
+  // keduanya. Daftar origin diambil dari CORS_ORIGIN (dipisah koma); default
+  // hanya untuk dev Vite.
+  const allowedOrigins = (process.env.CORS_ORIGIN ?? "http://localhost:5173,http://127.0.0.1:5173")
+    .split(",")
+    .map((origin) => origin.trim())
+    .filter(Boolean);
+
   app.enableCors({
-    origin: "*",
+    origin: allowedOrigins.includes("*") ? true : allowedOrigins,
+    credentials: true,
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS",
+    allowedHeaders: ["Content-Type", "Authorization", "Accept"],
   });
 
   app.useGlobalInterceptors(new TimeoutInterceptor());
