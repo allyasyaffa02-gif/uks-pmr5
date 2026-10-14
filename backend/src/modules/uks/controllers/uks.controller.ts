@@ -9,12 +9,16 @@ import {
   ParseIntPipe,
   HttpCode,
   HttpStatus,
+  UseGuards,
 } from "@nestjs/common";
 import { UksService } from "../services/uks.service";
 import { CreateKasusDto } from "../dto/create-kasus.dto";
 import { FilterKasusDto } from "../dto/filter-kasus.dto";
+import { JwtAuthGuard } from "../../auth/guards/jwt-auth.guard";
 
+/** Semua endpoint uks butuh header Authorization: Bearer <access token>. */
 @Controller("uks")
+@UseGuards(JwtAuthGuard)
 export class UksController {
   constructor(private readonly uksService: UksService) {}
 
