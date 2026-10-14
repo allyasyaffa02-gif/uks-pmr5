@@ -96,6 +96,26 @@ export class ObatRepository {
     });
   }
 
+  /**
+   * Simpan banyak obat sekaligus dalam satu query (dipakai fitur import Excel)
+   * supaya tidak ada data yang masuk setengah jalan bila terjadi kegagalan.
+   */
+  async createMany(data: CreateObatData[]): Promise<number> {
+    if (!data.length) return 0;
+
+    const result = await this.db.createMany({
+      data: data.map((item) => ({
+        name: item.name,
+        stok: item.stok,
+        satuanId: item.satuanId,
+        tanggalBeli: item.tanggalBeli,
+        tanggalKadaluarsa: item.tanggalKadaluarsa,
+      })),
+    });
+
+    return result.count;
+  }
+
   async update(id: number, data: CreateObatData) {
     return this.db.update({
       where: { id },
