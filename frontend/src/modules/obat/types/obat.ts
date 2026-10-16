@@ -79,12 +79,15 @@ export interface ImportObatResult {
 }
 
 export interface ObatStatisticResponse {
+  all: number;
+  totalStock: number;
   lowStock: number;
   expiringSoon: number;
   expired: number;
 }
 
 export interface ObatStatistic {
+  semua: number;
   hampirHabis: number;
   hampirKadaluarsa: number;
   kadaluarsa: number;

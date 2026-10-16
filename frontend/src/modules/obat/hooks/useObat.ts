@@ -5,23 +5,22 @@ import {
   updateObatApi,
   deleteObatApi,
   importObatApi,
+  ObatListApiResponse,
 } from "../services/obat.service";
 import {
   ObatFilterParams,
   CreateObatInput,
   UpdateObatInput,
-  ObatItem,
   ObatSummary,
 } from "../types/obat";
 import { handleServerErrors } from "../../../utils/apiClient";
-import { ApiResponse } from "../../../types/api";
 
 export const OBAT_QUERY_KEY = ["master-obat"];
 
 export function useObat(filter?: ObatFilterParams) {
   const queryClient = useQueryClient();
 
-  const query = useQuery<ApiResponse<ObatItem[]>>({
+  const query = useQuery<ObatListApiResponse>({
     queryKey: [...OBAT_QUERY_KEY, filter?.search, filter?.status],
     queryFn: () => getObatListApi(filter),
   });
@@ -61,32 +60,17 @@ export function useObat(filter?: ObatFilterParams) {
     onError: (error) => handleServerErrors(error),
   });
 
-  const obatList = query.data?.data || [];
+  const obatList = query.data?.data ?? [];
+  const obatSummary = query.data?.statistic;
 
   // Calculate summaries across all items
   const summary: ObatSummary = {
-    totalJenis: obatList.length,
-    totalStok: obatList.reduce(
-      (acc, item) => acc + (Number(item.stok) || 0),
-      0,
-    ),
-    stokMenipis: obatList.filter((item) => Number(item.stok) <= 10).length,
-    mendekatiKadaluarsa: 0,
-    kadaluarsa: 0,
+    totalJenis: obatSummary?.all ?? 0,
+    totalStok: obatSummary?.totalStock ?? 0,
+    stokMenipis: obatSummary?.lowStock ?? 0,
+    mendekatiKadaluarsa: obatSummary?.expiringSoon ?? 0,
+    kadaluarsa: obatSummary?.expired ?? 0,
   };
-
-  const now = new Date();
-  const thirtyDaysAhead = new Date();
-  thirtyDaysAhead.setDate(thirtyDaysAhead.getDate() + 30);
-
-  obatList.forEach((item) => {
-    const exp = new Date(item.tanggalKadaluarsa);
-    if (exp < now) {
-      summary.kadaluarsa += 1;
-    } else if (exp <= thirtyDaysAhead) {
-      summary.mendekatiKadaluarsa += 1;
-    }
-  });
 
   return {
     obatList,

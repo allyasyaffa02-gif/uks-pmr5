@@ -9,6 +9,7 @@ import {
   ImportObatResult,
   ObatStatistic,
   ObatStatisticResponse,
+  ObatSummary,
 } from "../types/obat";
 
 export const getSatuanObatApi = async (): Promise<
@@ -20,10 +21,14 @@ export const getSatuanObatApi = async (): Promise<
   return response.data;
 };
 
+export interface ObatListApiResponse extends ApiResponse<ObatItem[]> {
+  statistic: ObatStatisticResponse;
+}
+
 export const getObatListApi = async (
   params?: ObatFilterParams,
-): Promise<ApiResponse<ObatItem[]>> => {
-  const response = await apiClient.get<ApiResponse<ObatItem[]>>("/obat", {
+): Promise<ObatListApiResponse> => {
+  const response = await apiClient.get<ObatListApiResponse>("/obat", {
     params,
   });
 
@@ -37,6 +42,7 @@ export const getObatStatisticApi = async (): Promise<ObatStatistic> => {
   const data = response.data?.data ?? response.data;
 
   return {
+    semua: data.all,
     hampirHabis: data.lowStock,
     hampirKadaluarsa: data.expiringSoon,
     kadaluarsa: data.expired,
