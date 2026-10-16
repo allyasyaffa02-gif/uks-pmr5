@@ -4,14 +4,14 @@ import {
   createKasusApi,
   deleteKasusApi,
 } from "../services/uks.service";
-import { KasusFilterParams, CreateKasusInput, KasusItem } from "../types/uks";
+import { KasusFilterParams, CreateKasusInput } from "../types/uks";
 
 export const UKS_KASUS_QUERY_KEY = ["uks", "kasus"];
 
 export const useUksKasus = (filterParams?: KasusFilterParams) => {
   const queryClient = useQueryClient();
 
-  const kasusQuery = useQuery<KasusItem[]>({
+  const kasusQuery = useQuery({
     queryKey: [...UKS_KASUS_QUERY_KEY, filterParams],
     queryFn: () => getKasusApi(filterParams),
   });
