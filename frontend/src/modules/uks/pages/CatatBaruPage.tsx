@@ -22,6 +22,8 @@ import { FormTimePicker } from "../../../components/ui/FormTimePicker";
 import { KasusFormValues } from "../../../types/form";
 import { formatDateValue, formatTimeValue } from "../../../utils/dateTime";
 import { ChipsItem } from "../types/uks";
+import { ApiResponse } from "../../../types/api";
+import { ObatItem } from "../../obat/types/obat";
 
 interface CatatBaruPageProps {
   onSuccess: () => void;
@@ -55,8 +57,9 @@ export const CatatBaruPage: React.FC<CatatBaruPageProps> = ({ onSuccess }) => {
   const { createKasus, isCreating } = useUksKasus();
 
   const { data: obatList = [], isLoading: isLoadingObat } = useQuery({
-    queryKey: ["obat-options"],
+    queryKey: ["master-obat"],
     queryFn: () => getObatListApi(),
+    select: (res) => res.data,
   });
 
   const getInitialValues = (): KasusFormValues => {
@@ -321,8 +324,8 @@ export const CatatBaruPage: React.FC<CatatBaruPageProps> = ({ onSuccess }) => {
             <div className="flex flex-col gap-space-sm">
               {obatFields.map((field, index) => {
                 const selectedId = obatValues[index]?.obatId ?? "";
-                const selectedObat = obatList.find(
-                  (o) => String(o.id) === String(selectedId),
+                const selectedObat = obatList?.find(
+                  (o: ObatItem) => String(o.id) === String(selectedId),
                 );
                 const jumlah = Number(obatValues[index]?.jumlah ?? 0);
                 const stok = selectedObat ? Number(selectedObat.stok) : 0;

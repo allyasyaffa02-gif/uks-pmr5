@@ -1,9 +1,9 @@
-import { useQuery } from '@tanstack/react-query';
-import { getRekapApi } from '../services/uks.service';
+import { useQuery } from "@tanstack/react-query";
+import { getRekapApi } from "../services/uks.service";
 
 export const useUksRekap = () => {
   const rekapQuery = useQuery({
-    queryKey: ['uks', 'rekap'],
+    queryKey: ["uks", "rekap"],
     queryFn: getRekapApi,
   });
 
