@@ -132,7 +132,10 @@ export class TokenService {
   }
 
   /** Buat pasangan access + refresh token untuk satu sesi login. */
-  async issueTokens(user: TokenSubject, sessionId: string): Promise<IssuedTokens> {
+  async issueTokens(
+    user: TokenSubject,
+    sessionId: string,
+  ): Promise<IssuedTokens> {
     const accessPayload: JwtTokenPayload = {
       ...this.basePayload(user),
       typ: "access",

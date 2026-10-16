@@ -20,6 +20,28 @@ export class ObatRepository {
     return this.prisma.obat;
   }
 
+  private buildStatusWhere(
+    status: "all" | "low_stock" | "expiring_soon" | "expired",
+    now = new Date(),
+  ): Prisma.ObatWhereInput {
+    switch (status) {
+      case "low_stock":
+        return { stok: { lte: LOW_STOCK_THRESHOLD } };
+
+      case "expiring_soon": {
+        const limit = new Date(now);
+        limit.setDate(limit.getDate() + EXPIRING_SOON_DAYS);
+        return { tanggalKadaluarsa: { gte: now, lte: limit } };
+      }
+
+      case "expired":
+        return { tanggalKadaluarsa: { lt: now } };
+
+      default:
+        return {};
+    }
+  }
+
   constructor(private readonly prisma: PrismaService) {}
 
   async getAll(params?: FilterObatDto): Promise<ObatWithRelation[]> {
@@ -37,27 +59,49 @@ export class ObatRepository {
 
     // Filter status
     if (params?.status && params.status !== "all") {
-      const now = new Date();
-      const thirtyDaysAhead = new Date();
-      thirtyDaysAhead.setDate(thirtyDaysAhead.getDate() + EXPIRING_SOON_DAYS);
-
-      switch (params.status) {
-        case "low_stock":
-          where.stok = { lte: LOW_STOCK_THRESHOLD };
-          break;
-        case "expiring_soon":
-          where.tanggalKadaluarsa = { gte: now, lte: thirtyDaysAhead };
-          break;
-        case "expired":
-          where.tanggalKadaluarsa = { lt: now };
-          break;
-      }
+      Object.assign(where, this.buildStatusWhere(params.status));
     }
 
     return this.db.findMany({
       include: ObatInclude,
       where,
     });
+  }
+
+  async getStatistic(): Promise<{
+    all: number;
+    totalStock: number;
+    lowStock: number;
+    expiringSoon: number;
+    expired: number;
+  }> {
+    const now = new Date();
+    const thirtyDaysAhead = new Date();
+    thirtyDaysAhead.setDate(thirtyDaysAhead.getDate() + 30);
+
+    const obat = await this.getAll();
+
+    let expiringSoon = 0;
+    let expired = 0;
+
+    obat.forEach((item) => {
+      const exp = new Date(item.tanggalKadaluarsa);
+
+      if (exp < now) {
+        expired++;
+      } else if (exp <= thirtyDaysAhead) {
+        expiringSoon++;
+      }
+    });
+
+    const all = obat.length;
+    const totalStock = obat.reduce(
+      (acc, item) => acc + (Number(item.stok) || 0),
+      0,
+    );
+    const lowStock = obat.filter((item) => Number(item.stok) <= 10).length;
+
+    return { all, totalStock, lowStock, expiringSoon, expired };
   }
 
   async getDetail(id: number): Promise<ObatWithRelation | null> {

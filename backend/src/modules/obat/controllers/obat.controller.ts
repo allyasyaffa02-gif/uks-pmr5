@@ -75,7 +75,10 @@ export class ObatController {
       limits: { fileSize: OBAT_IMPORT_MAX_FILE_SIZE, files: 1 },
       fileFilter: (_req, file, callback) => {
         if (!/\.xlsx$/i.test(file.originalname)) {
-          callback(new BadRequestException("File harus berformat .xlsx"), false);
+          callback(
+            new BadRequestException("File harus berformat .xlsx"),
+            false,
+          );
           return;
         }
 
@@ -99,6 +102,18 @@ export class ObatController {
     return {
       status: 200,
       message: "Berhasil mendapatkan daftar obat",
+      data: obat.obatWithSatuan,
+      statistic: obat.summary,
+    };
+  }
+
+  @Get("statistic")
+  async getObatStatistic() {
+    const obat = await this.obatService.getStatistic();
+
+    return {
+      status: 200,
+      message: "Berhasil mendapatkan statistic obat",
       data: obat,
     };
   }

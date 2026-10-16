@@ -42,7 +42,15 @@ export class ObatService {
     const obat = await this.obatRepository.getAll(filterDto);
 
     const obatWithSatuan = obat.map((obat) => this.serializeObat(obat));
-    return obatWithSatuan;
+    const summary = await this.obatRepository.getStatistic();
+
+    return { obatWithSatuan, summary };
+  }
+
+  async getStatistic() {
+    const obat = await this.obatRepository.getStatistic();
+
+    return obat;
   }
 
   async getDetailObat(id: number) {
