@@ -1,44 +1,32 @@
 import { NestFactory } from "@nestjs/core";
-import { ValidationPipe } from "@nestjs/common";
-import { AppModule } from "../src/app.module";
-import { TimeoutInterceptor } from "../src/common/interceptors/timeout.interceptors";
 import { ExpressAdapter } from "@nestjs/platform-express";
-import express, { type Express } from "express";
+import express from "express";
+import { AppModule } from "../src/app.module";
+import { setupApp } from "../src/setup-app";
 
 const server = express();
 
-export const createNestServer = async (expressInstance: Express) => {
-  const app = await NestFactory.create(
-    AppModule,
-    new ExpressAdapter(expressInstance),
-  );
+/**
+ * Serverless: satu instance server dipakai ulang antar invocation (warm start).
+ * Yang di-cache adalah PROMISE-nya, bukan hasilnya, supaya beberapa request yang
+ * datang bersamaan saat cold start tidak menjalankan bootstrap berulang kali.
+ */
+let ready: Promise<void> | null = null;
 
-  app.enableCors({
-    origin: "*",
-    methods: "GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS",
-  });
-
-  app.useGlobalInterceptors(new TimeoutInterceptor());
-
-  app.useGlobalPipes(
-    new ValidationPipe({
-      whitelist: true,
-      transform: true,
-      forbidNonWhitelisted: true,
-    }),
-  );
-
-  app.setGlobalPrefix("api");
-
-  await app.init();
-};
-
-let cachedServer: any;
+function bootstrap(): Promise<void> {
+  return (async () => {
+    const app = await NestFactory.create(AppModule, new ExpressAdapter(server));
+    // CORS, ValidationPipe, interceptor & global prefix semuanya diatur di sini
+    // agar perilaku Vercel identik dengan `npm run start:prod` (src/main.ts).
+    // Jangan duplikasi konfigurasi CORS di file ini: origin hardcoded ("*")
+    // membuat browser menolak cookie httpOnly dan menghilangkan `Vary: Origin`.
+    setupApp(app);
+    await app.init();
+  })();
+}
 
 export default async function handler(req: any, res: any) {
-  if (!cachedServer) {
-    await createNestServer(server);
-    cachedServer = server;
-  }
+  ready ??= bootstrap();
+  await ready;
   return server(req, res);
 }

@@ -9,6 +9,15 @@ export function setupApp(app: INestApplication) {
     .map((origin) => origin.trim().replace(/\/$/, ""))
     .filter(Boolean);
 
+  /**
+   * Refresh token dikirim sebagai cookie httpOnly, jadi request WAJIB memakai
+   * credentials. Spesifikasi CORS melarang `Access-Control-Allow-Origin: *`
+   * bersama `Allow-Credentials: true` - browser akan memblokir responsnya.
+   * Karena itu `*` diterjemahkan ke `true` (cermin origin pemanggil) dan bukan
+   * diteruskan apa adanya. `credentials: true` juga yang membuat paket `cors`
+   * menulis header `Vary: Origin`, sehingga cache Vercel tidak pernah menyajikan
+   * header CORS milik origin yang berbeda.
+   */
   app.enableCors({
     origin: allowedOrigins.includes("*") ? true : allowedOrigins,
     credentials: true,
