@@ -48,7 +48,9 @@ export const resetPasswordApi = async (
 /** Ganti password; user diambil dari token, jadi username tidak dikirim. */
 export const changePasswordApi = async (
   data: ChangePasswordInput,
-): Promise<AuthMessageResponse & { accessToken?: string; expiresIn?: number }> => {
+): Promise<
+  AuthMessageResponse & { accessToken?: string; expiresIn?: number }
+> => {
   const response = await apiClient.post<
     AuthMessageResponse & { accessToken?: string; expiresIn?: number }
   >("/auth/change-password", data);

@@ -4,6 +4,8 @@ import {
   getAccessToken,
   setAccessToken,
 } from "./tokenStorage";
+import { FieldValues, Path, UseFormSetError } from "react-hook-form";
+import { ApiErrorResponse } from "../types/api";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "/api";
 
@@ -39,7 +41,11 @@ interface RetriableRequestConfig extends InternalAxiosRequestConfig {
 }
 
 /** Endpoint auth yang tidak boleh memicu percobaan refresh. */
-const NO_REFRESH_URLS = ["/auth/login", "/auth/refresh", "/auth/reset-password"];
+const NO_REFRESH_URLS = [
+  "/auth/login",
+  "/auth/refresh",
+  "/auth/reset-password",
+];
 
 function shouldSkipRefresh(url?: string): boolean {
   if (!url) return false;
@@ -124,3 +130,24 @@ apiClient.interceptors.response.use(
     return apiClient.request(config);
   },
 );
+
+export const handleServerErrors = <TFieldValues extends FieldValues>(
+  error: unknown,
+  setError?: UseFormSetError<TFieldValues>,
+) => {
+  if (
+    axios.isAxiosError<ApiErrorResponse>(error) &&
+    error.response?.status === 422
+  ) {
+    const backendErrors = error.response.data?.errors;
+
+    if (backendErrors && setError) {
+      Object.keys(backendErrors).forEach((field) => {
+        setError(field as Path<TFieldValues>, {
+          type: "server",
+          message: backendErrors[field][0],
+        });
+      });
+    }
+  }
+};

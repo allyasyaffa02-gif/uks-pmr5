@@ -2,12 +2,23 @@ import React from "react";
 import { Header } from "./Header";
 import { StatsCard } from "./StatsCard";
 import { NavigationTabs, TabType } from "./NavigationTabs";
+import { useQuery } from "@tanstack/react-query";
+import { getObatStatisticApi } from "../../modules/obat/services/obat.service";
 
 interface MainLayoutProps {
   activeTab: TabType;
   onTabChange: (tab: TabType) => void;
   children: React.ReactNode;
 }
+
+const camelToWords = (str: string): string =>
+  str.replace(/([a-z0-9])([A-Z])/g, "$1 $2").toLowerCase();
+
+const joinPositiveKeys = (obj: object = {}): string =>
+  Object.entries(obj)
+    .filter(([, value]) => typeof value === "number" && value > 0)
+    .map(([key]) => camelToWords(key))
+    .join(", ");
 
 export const MainLayout: React.FC<MainLayoutProps> = ({
   activeTab,
@@ -16,6 +27,14 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
 }) => {
   const currentYear = new Date().getFullYear();
 
+  const kasusQuery = useQuery({
+    queryKey: ["obat-statistic"],
+    queryFn: () => getObatStatisticApi(),
+  });
+
+  // data boleh undefined, default parameter `= {}` yang menanganinya
+  const notifText = joinPositiveKeys(kasusQuery.data);
+
   return (
     <div className="flex min-h-screen flex-col bg-surface font-body-md text-on-surface antialiased">
       {/* Header Utama Aplikasi */}
@@ -23,6 +42,14 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
 
       <main className="w-full flex-1 bg-surface">
         <div className="flex flex-col w-full max-w-7xl mx-auto px-gutter py-space-lg space-y-space-lg sm:px-gutter-desktop">
+          {notifText && (
+            <span className="px-2 py-3 bg-red-600 text-white font-medium rounded-md flex flex-row items-center gap-2">
+              <span className="material-symbols-outlined text-lg">warning</span>
+              Ada obat yang <strong className="font-black">{notifText}</strong>
+              segera cek dan lakukan tindakan yang diperlukan!
+            </span>
+          )}
+
           <section className="grid grid-cols-1 md:grid-cols-3 gap-space-md">
             {/* Ringkasan Statistik */}
             <StatsCard />
