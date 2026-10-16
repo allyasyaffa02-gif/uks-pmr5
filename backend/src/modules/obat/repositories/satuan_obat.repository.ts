@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
-import { Master_Satuan_Obat } from "src/generated/prisma";
-import { PrismaService } from "src/prisma/prisma.service";
+import { Master_Satuan_Obat } from "../../../generated/prisma";
+import { PrismaService } from "../../../prisma/prisma.service";
 
 @Injectable()
 export class SatuanObatRepository {

@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable } from "@nestjs/common";
 import { PrismaService } from "../../../prisma/prisma.service";
-import { Prisma } from "src/generated/prisma";
+import { Prisma } from "../../../generated/prisma";
 
 /** Satu obat yang dipakai pada sebuah kasus (relasi pasien <-> obat). */
 export interface CreatePasienObatData {
