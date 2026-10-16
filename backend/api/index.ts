@@ -3,11 +3,11 @@ import { ValidationPipe } from "@nestjs/common";
 import { AppModule } from "../src/app.module";
 import { TimeoutInterceptor } from "../src/common/interceptors/timeout.interceptors";
 import { ExpressAdapter } from "@nestjs/platform-express";
-import express from "express";
+import express, { type Express } from "express";
 
 const server = express();
 
-export const createNestServer = async (expressInstance: express.Express) => {
+export const createNestServer = async (expressInstance: Express) => {
   const app = await NestFactory.create(
     AppModule,
     new ExpressAdapter(expressInstance),
