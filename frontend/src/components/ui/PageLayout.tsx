@@ -33,7 +33,9 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
   });
 
   // data boleh undefined, default parameter `= {}` yang menanganinya
-  const notifText = joinPositiveKeys(kasusQuery.data);
+  const notifText = joinPositiveKeys(
+    Object.keys(kasusQuery.data ?? {}).filter((i) => i !== "semua"),
+  );
 
   return (
     <div className="flex min-h-screen flex-col bg-surface font-body-md text-on-surface antialiased">
