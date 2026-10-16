@@ -13,13 +13,15 @@ import {
   ObatItem,
   ObatSummary,
 } from "../types/obat";
+import { handleServerErrors } from "../../../utils/apiClient";
+import { ApiResponse } from "../../../types/api";
 
 export const OBAT_QUERY_KEY = ["master-obat"];
 
 export function useObat(filter?: ObatFilterParams) {
   const queryClient = useQueryClient();
 
-  const query = useQuery<ObatItem[]>({
+  const query = useQuery<ApiResponse<ObatItem[]>>({
     queryKey: [...OBAT_QUERY_KEY, filter?.search, filter?.status],
     queryFn: () => getObatListApi(filter),
   });
@@ -29,6 +31,7 @@ export function useObat(filter?: ObatFilterParams) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: OBAT_QUERY_KEY });
     },
+    onError: (error) => handleServerErrors(error),
   });
 
   const updateMutation = useMutation({
@@ -37,6 +40,7 @@ export function useObat(filter?: ObatFilterParams) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: OBAT_QUERY_KEY });
     },
+    onError: (error) => handleServerErrors(error),
   });
 
   const deleteMutation = useMutation({
@@ -44,6 +48,7 @@ export function useObat(filter?: ObatFilterParams) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: OBAT_QUERY_KEY });
     },
+    onError: (error) => handleServerErrors(error),
   });
 
   // Import Excel: hasil per baris dikembalikan ke pemanggil untuk ditampilkan,
@@ -53,9 +58,10 @@ export function useObat(filter?: ObatFilterParams) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: OBAT_QUERY_KEY });
     },
+    onError: (error) => handleServerErrors(error),
   });
 
-  const obatList = query.data || [];
+  const obatList = query.data?.data || [];
 
   // Calculate summaries across all items
   const summary: ObatSummary = {

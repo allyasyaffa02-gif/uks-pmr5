@@ -4,6 +4,7 @@ import { X, Pill, Package, Calendar, Tag, AlertCircle } from "lucide-react";
 import { ObatItem, CreateObatInput, SatuanObatItem } from "../types/obat";
 import { useQuery } from "@tanstack/react-query";
 import { getSatuanObatApi } from "../services/obat.service";
+import { ApiResponse } from "../../../types/api";
 
 interface ObatModalProps {
   isOpen: boolean;
@@ -22,12 +23,12 @@ export const ObatModal: React.FC<ObatModalProps> = ({
 }) => {
   const isEdit = Boolean(initialData);
 
-  const satuanObat = useQuery<SatuanObatItem[]>({
+  const satuanObat = useQuery<ApiResponse<SatuanObatItem[]>>({
     queryKey: ["satuanObat"],
     queryFn: () => getSatuanObatApi(),
   });
 
-  const satuanOptions = satuanObat.data ?? [];
+  const satuanOptions = satuanObat.data?.data ?? [];
 
   const {
     register,

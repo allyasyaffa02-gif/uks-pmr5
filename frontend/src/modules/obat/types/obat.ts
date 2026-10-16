@@ -77,3 +77,15 @@ export interface ImportObatResult {
   summary: ImportObatSummary;
   rows: ImportObatRowResult[];
 }
+
+export interface ObatStatisticResponse {
+  lowStock: number;
+  expiringSoon: number;
+  expired: number;
+}
+
+export interface ObatStatistic {
+  hampirHabis: number;
+  hampirKadaluarsa: number;
+  kadaluarsa: number;
+}

@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from "react";
 import { Header } from "../../../components/ui/Header";
 import { useObat } from "../hooks/useObat";
-import { ObatItem, CreateObatInput, ObatFilterStatus } from "../types/obat";
+import { ObatItem, CreateObatInput, ObatFilterStatus, ImportObatResult } from "../types/obat";
 import { ObatModal } from "../components/ObatModal";
 import { ObatImportModal } from "../components/ObatImportModal";
 import { downloadObatTemplateApi } from "../services/obat.service";
@@ -134,6 +134,15 @@ export const MasterObatPage: React.FC = () => {
       await deleteObat(deleteTarget.id);
       setDeleteTarget(null);
     }
+  };
+
+  /**
+   * Adapter import untuk modal: unwrap ApiResponse -> ImportObatResult
+   * agar sesuai dengan prop `onImport: (file: File) => Promise<ImportObatResult>`.
+   */
+  const handleImportObat = async (file: File): Promise<ImportObatResult> => {
+    const response = await importObat(file);
+    return response.data;
   };
 
   /**
@@ -603,7 +612,7 @@ export const MasterObatPage: React.FC = () => {
       <ObatImportModal
         isOpen={isImportOpen}
         onClose={() => setIsImportOpen(false)}
-        onImport={importObat}
+        onImport={handleImportObat}
         onDownloadTemplate={handleDownloadTemplate}
         isImporting={isImporting}
         isDownloadingTemplate={isDownloadingTemplate}
