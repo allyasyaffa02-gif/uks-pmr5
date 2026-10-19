@@ -2,13 +2,13 @@ import {
   Injectable,
   NotFoundException,
   UnauthorizedException,
-} from '@nestjs/common';
-import { AuthRepository } from '../repositories/auth.repository';
-import { SessionRepository } from '../repositories/session.repository';
-import { TokenService } from './token.service';
-import { ChangePasswordDto, LoginDto, ResetPasswordDto } from '../dto/auth.dto';
-import { hashPassword, verifyPassword } from '../password.util';
-import type { AuthUserView } from '../types/auth.types';
+} from "@nestjs/common";
+import { AuthRepository } from "../repositories/auth.repository";
+import { SessionRepository } from "../repositories/session.repository";
+import { TokenService } from "./token.service";
+import { ChangePasswordDto, LoginDto, ResetPasswordDto } from "../dto/auth.dto";
+import { hashPassword, verifyPassword } from "../password.util";
+import type { AuthUserView } from "../types/auth.types";
 
 /** Info perangkat pengirim request; ikut dicatat pada baris sesi. */
 export interface RequestMeta {
@@ -48,16 +48,19 @@ export class AuthService {
    * Login: verifikasi password, buka satu baris sesi, lalu terbitkan access
    * token (1 jam) + refresh token (3 hari, dirotasi tiap dipakai).
    */
-  async login(dto: LoginDto, meta: RequestMeta = {}): Promise<AuthTokensResult> {
+  async login(
+    dto: LoginDto,
+    meta: RequestMeta = {},
+  ): Promise<AuthTokensResult> {
     const username = dto.username?.trim();
     const user = await this.authRepository.findUserByUsername(username);
     if (!user) {
-      throw new UnauthorizedException('Username atau password salah');
+      throw new UnauthorizedException("Username atau password salah");
     }
 
     const passwordMatches = await verifyPassword(dto.password, user.password);
     if (!passwordMatches) {
-      throw new UnauthorizedException('Username atau password salah');
+      throw new UnauthorizedException("Username atau password salah");
     }
 
     // housekeeping: buang sesi mati, lalu sisakan sejumlah sesi aktif saja
@@ -84,7 +87,7 @@ export class AuthService {
         tokens.refreshToken,
         tokens.refreshTokenExpiresAt,
       ),
-      message: 'Login berhasil',
+      message: "Login berhasil",
     };
   }
 
@@ -100,7 +103,7 @@ export class AuthService {
   ): Promise<AuthTokensResult> {
     if (!refreshToken) {
       throw new UnauthorizedException(
-        'Refresh token tidak ditemukan. Silakan login kembali',
+        "Refresh token tidak ditemukan. Silakan login kembali",
       );
     }
 
@@ -116,14 +119,14 @@ export class AuthService {
       )
     ) {
       throw new UnauthorizedException(
-        'Sesi tidak valid. Silakan login kembali',
+        "Sesi tidak valid. Silakan login kembali",
       );
     }
 
     if (session.revokedAt || session.expiresAt.getTime() <= Date.now()) {
       await this.sessionRepository.revokeById(session.id);
       throw new UnauthorizedException(
-        'Sesi sudah berakhir. Silakan login kembali',
+        "Sesi sudah berakhir. Silakan login kembali",
       );
     }
 
@@ -131,7 +134,7 @@ export class AuthService {
     if (!user) {
       await this.sessionRepository.revokeById(session.id);
       throw new UnauthorizedException(
-        'Akun tidak ditemukan. Silakan login kembali',
+        "Akun tidak ditemukan. Silakan login kembali",
       );
     }
 
@@ -151,7 +154,7 @@ export class AuthService {
         tokens.refreshToken,
         tokens.refreshTokenExpiresAt,
       ),
-      message: 'Token diperbarui',
+      message: "Token diperbarui",
     };
   }
 
@@ -163,7 +166,8 @@ export class AuthService {
   async logout(refreshToken: string | undefined) {
     if (refreshToken) {
       try {
-        const payload = await this.tokenService.verifyRefreshToken(refreshToken);
+        const payload =
+          await this.tokenService.verifyRefreshToken(refreshToken);
         await this.sessionRepository.revokeById(payload.sid);
       } catch {
         // token sudah tidak sah: tidak ada sesi yang perlu dicabut
@@ -172,7 +176,7 @@ export class AuthService {
 
     return {
       success: true,
-      message: 'Logout berhasil',
+      message: "Logout berhasil",
       setCookie: this.tokenService.buildRefreshCookieClearer(),
     };
   }
@@ -181,7 +185,7 @@ export class AuthService {
   async me(currentUser: AuthUserView) {
     const user = await this.authRepository.findUserById(BigInt(currentUser.id));
     if (!user) {
-      throw new UnauthorizedException('Akun tidak ditemukan');
+      throw new UnauthorizedException("Akun tidak ditemukan");
     }
 
     return { success: true, user: serializeUser(user) };
@@ -200,14 +204,14 @@ export class AuthService {
     // Semua perangkat yang masih memegang token lama langsung diputus.
     await this.sessionRepository.revokeAllForUser(user.id);
 
-    return { success: true, message: 'Password berhasil direset' };
+    return { success: true, message: "Password berhasil direset" };
   }
 
   /** Ganti password saat sudah login: wajib tahu password lama. */
   async changePassword(dto: ChangePasswordDto, currentUser: AuthUserView) {
-    const username = dto.username?.trim();
+    const username = currentUser?.username?.trim();
     if (!username) {
-      throw new NotFoundException('Username tidak ditemukan');
+      throw new UnauthorizedException("Pengguna tidak terautentikasi");
     }
     const user = await this.authRepository.findUserByUsername(username);
     if (!user) {
@@ -215,7 +219,7 @@ export class AuthService {
     }
     const ok = await verifyPassword(dto.oldPassword, user.password);
     if (!ok) {
-      throw new UnauthorizedException('Password lama salah');
+      throw new UnauthorizedException("Password lama salah");
     }
     const hashed = await hashPassword(dto.newPassword);
     await this.authRepository.updatePasswordById(user.id, hashed);
@@ -242,7 +246,7 @@ export class AuthService {
 
         return {
           success: true,
-          message: 'Password berhasil diganti',
+          message: "Password berhasil diganti",
           accessToken: tokens.accessToken,
           expiresIn: tokens.accessTokenExpiresIn,
           setCookie: this.tokenService.buildRefreshCookie(
@@ -254,6 +258,6 @@ export class AuthService {
     }
 
     await this.sessionRepository.revokeAllForUser(user.id);
-    return { success: true, message: 'Password berhasil diganti' };
+    return { success: true, message: "Password berhasil diganti" };
   }
 }
