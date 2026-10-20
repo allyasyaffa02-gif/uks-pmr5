@@ -6,7 +6,7 @@ export interface ObatFormValue {
 export interface KasusFormValues {
   nama: string;
   kelas: string;
-  situasi: 'Saat Upacara' | 'Hari Biasa' | string;
+  situasi: "Saat Upacara" | "Hari Biasa" | string;
   tanggal: string;
   jam?: string;
   keluhan: string;
