@@ -1,33 +1,33 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import {
-  getKasusApi,
   createKasusApi,
   deleteKasusApi,
+  getKasusApi,
 } from "../services/uks.service";
-import { KasusFilterParams, CreateKasusInput } from "../types/uks";
+import { CreateKasusInput, KasusFilterParams } from "../types/uks";
+import { useToastMutation } from "../../../hooks/useToastMutation";
 
 export const UKS_KASUS_QUERY_KEY = ["uks", "kasus"];
 
-export const useUksKasus = (filterParams?: KasusFilterParams) => {
-  const queryClient = useQueryClient();
+/** Prefix query untuk seluruh data UKS (kasus, rekap, stats, kategori). */
+export const UKS_QUERY_KEY = ["uks"];
 
+export const useUksKasus = (filterParams?: KasusFilterParams) => {
   const kasusQuery = useQuery({
     queryKey: [...UKS_KASUS_QUERY_KEY, filterParams],
     queryFn: () => getKasusApi(filterParams),
   });
 
-  const createMutation = useMutation({
+  const createMutation = useToastMutation({
     mutationFn: (newKasus: CreateKasusInput) => createKasusApi(newKasus),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["uks"] });
-    },
+    successMessage: "Catatan kasus berhasil disimpan",
+    invalidateQueries: UKS_QUERY_KEY,
   });
 
-  const deleteMutation = useMutation({
+  const deleteMutation = useToastMutation({
     mutationFn: (id: number) => deleteKasusApi(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["uks"] });
-    },
+    successMessage: "Catatan kasus berhasil dihapus",
+    invalidateQueries: UKS_QUERY_KEY,
   });
 
   return {

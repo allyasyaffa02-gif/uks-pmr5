@@ -1,9 +1,9 @@
-import { useQuery } from '@tanstack/react-query';
-import { getKategoriApi } from '../services/uks.service';
+import { useQuery } from "@tanstack/react-query";
+import { getKategoriApi } from "../services/uks.service";
 
 export const useUksKategori = () => {
   const kategoriQuery = useQuery({
-    queryKey: ['uks', 'kategori'],
+    queryKey: ["uks", "kategori"],
     queryFn: getKategoriApi,
   });
 

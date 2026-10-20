@@ -1,4 +1,5 @@
 import { ApiResponse } from "../../../types/api";
+import { unwrapApiData } from "../../../utils/apiData";
 import { apiClient } from "../../../utils/apiClient";
 import {
   KasusItem,
@@ -8,24 +9,6 @@ import {
   StatsSummary,
   KategoriItem,
 } from "../types/uks";
-
-/**
- * Endpoint /uks bisa mengembalikan payload langsung atau dibungkus
- * `{ message, data, status }`. Helper ini menormalkan keduanya menjadi payload
- * aslinya supaya konsumen tidak perlu tahu bentuk mentah responsnya.
- */
-const unwrapApiData = <T>(payload: ApiResponse<T> | T): T => {
-  if (
-    payload !== null &&
-    typeof payload === "object" &&
-    "data" in payload &&
-    !Array.isArray(payload)
-  ) {
-    return (payload as ApiResponse<T>).data;
-  }
-
-  return payload as T;
-};
 
 export const getKasusApi = async (
   params?: KasusFilterParams,

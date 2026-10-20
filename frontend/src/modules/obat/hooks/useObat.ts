@@ -1,63 +1,53 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import {
-  getObatListApi,
   createObatApi,
-  updateObatApi,
   deleteObatApi,
+  getObatListApi,
   importObatApi,
   ObatListApiResponse,
+  updateObatApi,
 } from "../services/obat.service";
 import {
-  ObatFilterParams,
   CreateObatInput,
-  UpdateObatInput,
+  ObatFilterParams,
   ObatSummary,
+  UpdateObatInput,
 } from "../types/obat";
-import { handleServerErrors } from "../../../utils/apiClient";
+import { useToastMutation } from "../../../hooks/useToastMutation";
 
 export const OBAT_QUERY_KEY = ["master-obat"];
 
 export function useObat(filter?: ObatFilterParams) {
-  const queryClient = useQueryClient();
-
   const query = useQuery<ObatListApiResponse>({
     queryKey: [...OBAT_QUERY_KEY, filter?.search, filter?.status],
     queryFn: () => getObatListApi(filter),
   });
 
-  const createMutation = useMutation({
+  const createMutation = useToastMutation({
     mutationFn: (data: CreateObatInput) => createObatApi(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: OBAT_QUERY_KEY });
-    },
-    onError: (error) => handleServerErrors(error),
+    successMessage: "Obat berhasil ditambahkan",
+    invalidateQueries: OBAT_QUERY_KEY,
   });
 
-  const updateMutation = useMutation({
+  const updateMutation = useToastMutation({
     mutationFn: ({ id, data }: { id: number; data: UpdateObatInput }) =>
       updateObatApi(id, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: OBAT_QUERY_KEY });
-    },
-    onError: (error) => handleServerErrors(error),
+    successMessage: "Obat berhasil diperbarui",
+    invalidateQueries: OBAT_QUERY_KEY,
   });
 
-  const deleteMutation = useMutation({
+  const deleteMutation = useToastMutation({
     mutationFn: (id: number) => deleteObatApi(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: OBAT_QUERY_KEY });
-    },
-    onError: (error) => handleServerErrors(error),
+    successMessage: "Obat berhasil dihapus",
+    invalidateQueries: OBAT_QUERY_KEY,
   });
 
   // Import Excel: hasil per baris dikembalikan ke pemanggil untuk ditampilkan,
   // sedangkan daftar obat di-refresh bila ada baris yang berhasil disimpan.
-  const importMutation = useMutation({
+  // Karena itu tidak ada successMessage di sini; hanya error yang memunculkan toast.
+  const importMutation = useToastMutation({
     mutationFn: (file: File) => importObatApi(file),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: OBAT_QUERY_KEY });
-    },
-    onError: (error) => handleServerErrors(error),
+    invalidateQueries: OBAT_QUERY_KEY,
   });
 
   const obatList = query.data?.data ?? [];

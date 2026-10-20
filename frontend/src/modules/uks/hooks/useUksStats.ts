@@ -1,9 +1,9 @@
-import { useQuery } from '@tanstack/react-query';
-import { getStatsApi } from '../services/uks.service';
+import { useQuery } from "@tanstack/react-query";
+import { getStatsApi } from "../services/uks.service";
 
 export const useUksStats = () => {
   const statsQuery = useQuery({
-    queryKey: ['uks', 'stats'],
+    queryKey: ["uks", "stats"],
     queryFn: getStatsApi,
   });
 

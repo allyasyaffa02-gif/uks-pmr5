@@ -1,8 +1,9 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Controller, useFieldArray, useForm } from "react-hook-form";
 import { useQuery } from "@tanstack/react-query";
 import { useUksKasus } from "../hooks/useUksKasus";
 import { getObatListApi } from "../../obat/services/obat.service";
+import { getJurusanListApi } from "../../jurusan/services/jurusan.service";
 import {
   Save,
   UserCheck,
@@ -53,12 +54,25 @@ const SITUASI_OPTIONS = [
   { value: "Hari Biasa", label: "Hari Biasa / Jam KBM", icon: "event_note" },
 ] as const;
 
+const KELAS_TINGKAT_OPTIONS = [
+  { id: "X", label: "X" },
+  { id: "XI", label: "XI" },
+  { id: "XII", label: "XII" },
+  { id: "XIII", label: "XIII" },
+] as const;
+
 export const CatatBaruPage: React.FC<CatatBaruPageProps> = ({ onSuccess }) => {
   const { createKasus, isCreating } = useUksKasus();
 
   const { data: obatList = [], isLoading: isLoadingObat } = useQuery({
     queryKey: ["master-obat"],
     queryFn: () => getObatListApi(),
+    select: (res) => res.data,
+  });
+
+  const { data: jurusanList = [], isLoading: isLoadingJurusan } = useQuery({
+    queryKey: ["master-jurusan"],
+    queryFn: () => getJurusanListApi(),
     select: (res) => res.data,
   });
 
@@ -101,6 +115,30 @@ export const CatatBaruPage: React.FC<CatatBaruPageProps> = ({ onSuccess }) => {
 
   const situasiValue = watch("situasi");
   const obatValues = watch("obat") ?? [];
+
+  // Bagian-bagian "kelas" yang digabung jadi satu string (mis. "X KA 2").
+  const [kelasTingkat, setKelasTingkat] = useState("");
+  const [kelasJurusan, setKelasJurusan] = useState("");
+  const [kelasNomor, setKelasNomor] = useState("");
+
+  const composeKelas = (tingkat: string, jurusan: string, nomor: string) =>
+    [tingkat.trim(), jurusan.trim(), nomor.trim()].filter(Boolean).join(" ");
+
+  const handleKelasTingkatChange = (value: string) => {
+    setKelasTingkat(value);
+    setValue("kelas", composeKelas(value, kelasJurusan, kelasNomor));
+  };
+
+  const handleKelasJurusanChange = (value: string) => {
+    setKelasJurusan(value);
+    setValue("kelas", composeKelas(kelasTingkat, value, kelasNomor));
+  };
+
+  const handleKelasNomorChange = (rawValue: string) => {
+    const digits = rawValue.replace(/\D/g, "");
+    setKelasNomor(digits);
+    setValue("kelas", composeKelas(kelasTingkat, kelasJurusan, digits));
+  };
 
   // Saat ada baris obat ditambah / dihapus / diganti, jalankan ulang validasi
   // supaya peringatan "obat sudah dipilih" langsung muncul atau langsung hilang
@@ -155,6 +193,9 @@ export const CatatBaruPage: React.FC<CatatBaruPageProps> = ({ onSuccess }) => {
 
   const resetFormCustom = () => {
     reset();
+    setKelasTingkat("");
+    setKelasJurusan("");
+    setKelasNomor("");
   };
 
   return (
@@ -192,12 +233,100 @@ export const CatatBaruPage: React.FC<CatatBaruPageProps> = ({ onSuccess }) => {
             error={errors.nama}
           />
 
-          <FormInput
-            label="Kelas"
-            placeholder="Contoh: X-2"
-            registration={register("kelas", { required: "Kelas wajib diisi" })}
-            error={errors.kelas}
-          />
+          <div className="flex flex-col space-y-1.5">
+            <input
+              type="hidden"
+              {...register("kelas", {
+                required: "Kelas wajib diisi",
+                validate: () => {
+                  if (!kelasTingkat)
+                    return "Pilih jenjang kelas (X, XI, XII, XIII)";
+                  if (!kelasJurusan) return "Pilih jurusan";
+                  if (!kelasNomor) return "Isi nomor kelas (hanya angka)";
+                  return true;
+                },
+              })}
+            />
+            <label className="flex items-center gap-space-xs font-label-lg text-label-lg text-on-surface">
+              <span className="material-symbols-outlined text-[18px] text-primary">
+                school
+              </span>
+              <span>Kelas</span>
+            </label>
+
+            <div className="flex flex-col sm:flex-row gap-space-sm">
+              {/* Jenjang kelas */}
+              <div className="relative sm:w-24">
+                <select
+                  aria-label="Jenjang kelas"
+                  value={kelasTingkat}
+                  onChange={(e) => handleKelasTingkatChange(e.target.value)}
+                  className={`w-full appearance-none h-12 pl-space-md pr-8 rounded-lg bg-surface-container-low text-on-surface font-body-md text-body-md focus:bg-surface-container-lowest focus:outline-none focus:shadow-[0_0_0_2px_#dc2626] transition-all border ${
+                    errors.kelas ? "border-red-400" : "border-white/10"
+                  }`}
+                >
+                  <option value="">Kelas</option>
+                  {KELAS_TINGKAT_OPTIONS.map((opt) => (
+                    <option key={opt.id} value={opt.id}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown
+                  size={18}
+                  className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-secondary"
+                />
+              </div>
+
+              {/* Jurusan (diambil dari master jurusan) */}
+              <div className="relative flex-1">
+                <select
+                  aria-label="Jurusan"
+                  value={kelasJurusan}
+                  disabled={isLoadingJurusan}
+                  onChange={(e) => handleKelasJurusanChange(e.target.value)}
+                  className={`w-full appearance-none h-12 pl-space-md pr-8 rounded-lg bg-surface-container-low text-on-surface font-body-md text-body-md focus:bg-surface-container-lowest focus:outline-none focus:shadow-[0_0_0_2px_#dc2626] transition-all border disabled:cursor-not-allowed disabled:opacity-60 ${
+                    errors.kelas ? "border-red-400" : "border-white/10"
+                  }`}
+                >
+                  <option value="">
+                    {isLoadingJurusan
+                      ? "Memuat jurusan..."
+                      : "-- Pilih Jurusan --"}
+                  </option>
+                  {jurusanList.map((item) => (
+                    <option key={item.id} value={item.name}>
+                      {item.name}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown
+                  size={18}
+                  className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-secondary"
+                />
+              </div>
+
+              {/* Nomor kelas (hanya angka) */}
+              <input
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                aria-label="Nomor kelas"
+                placeholder="Nomor"
+                value={kelasNomor}
+                onChange={(e) => handleKelasNomorChange(e.target.value)}
+                className={`sm:w-24 h-12 px-space-md rounded-lg bg-surface-container-low text-on-surface font-body-md text-body-md focus:bg-surface-container-lowest focus:outline-none focus:shadow-[0_0_0_2px_#dc2626] transition-all border ${
+                  errors.kelas ? "border-red-400" : "border-white/10"
+                }`}
+              />
+            </div>
+
+            {errors.kelas && (
+              <span className="text-[0.78rem] text-red-400 font-medium">
+                {errors.kelas.message}
+              </span>
+            )}
+          </div>
         </div>
 
         {/* Situasi Kejadian */}
