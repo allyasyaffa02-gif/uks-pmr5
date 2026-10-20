@@ -1,5 +1,5 @@
-import React from "react";
-import { Link, NavLink } from "react-router-dom";
+import React, { useEffect, useRef, useState } from "react";
+import { Link, NavLink, useLocation } from "react-router-dom";
 import { useAuth } from "../../modules/auth/hooks/useAuth";
 
 /**
@@ -22,6 +22,60 @@ export const Header: React.FC = () => {
     `flex flex-1 items-center justify-center gap-1.5 rounded-xl px-3 py-2 font-label-md text-label-md transition-all lg:flex-none ${
       isActive
         ? "bg-primary-container text-on-primary-container font-semibold shadow-xs"
+        : "text-secondary hover:bg-surface-container-low hover:text-on-surface"
+    }`;
+
+  const location = useLocation();
+  const [isMasterOpen, setIsMasterOpen] = useState(false);
+  const masterMenuRef = useRef<HTMLDivElement>(null);
+
+  // "Master" dianggap aktif saat berada di halaman Master Obat / Master Jurusan.
+  const isMasterActive =
+    location.pathname.startsWith("/obat") ||
+    location.pathname.startsWith("/jurusan");
+
+  // Tutup submenu setiap kali berpindah halaman.
+  useEffect(() => {
+    setIsMasterOpen(false);
+  }, [location.pathname]);
+
+  // Tutup submenu saat pengguna klik di luar atau menekan Escape.
+  useEffect(() => {
+    if (!isMasterOpen) return;
+
+    const handlePointerDown = (event: MouseEvent) => {
+      if (
+        masterMenuRef.current &&
+        !masterMenuRef.current.contains(event.target as Node)
+      ) {
+        setIsMasterOpen(false);
+      }
+    };
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setIsMasterOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handlePointerDown);
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.removeEventListener("mousedown", handlePointerDown);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isMasterOpen]);
+
+  const masterTriggerClass =
+    isMasterActive || isMasterOpen
+      ? "bg-primary-container text-on-primary-container font-semibold shadow-xs"
+      : "text-secondary hover:bg-surface-container-low hover:text-on-surface";
+
+  const masterSubmenuLinkClass = ({ isActive }: { isActive: boolean }) =>
+    `flex items-center gap-2 rounded-lg px-3 py-2 font-label-md text-label-md transition-colors ${
+      isActive
+        ? "bg-primary-container text-on-primary-container font-semibold"
         : "text-secondary hover:bg-surface-container-low hover:text-on-surface"
     }`;
 
@@ -95,12 +149,59 @@ export const Header: React.FC = () => {
             <span>Buku Registrasi</span>
           </NavLink>
 
-          <NavLink to="/obat" className={navLinkClass}>
-            <span className="material-symbols-outlined text-[18px]">
-              medication
-            </span>
-            <span>Master Obat</span>
-          </NavLink>
+          <div
+            ref={masterMenuRef}
+            className="relative flex flex-1 lg:flex-none"
+          >
+            <button
+              type="button"
+              aria-haspopup="true"
+              aria-expanded={isMasterOpen}
+              onClick={() => setIsMasterOpen((prev) => !prev)}
+              className={`flex w-full items-center justify-center gap-1.5 rounded-xl px-3 py-2 font-label-md text-label-md transition-all cursor-pointer lg:w-auto ${masterTriggerClass}`}
+            >
+              <span className="material-symbols-outlined text-[18px]">
+                database
+              </span>
+              <span>Master</span>
+              <span
+                className={`material-symbols-outlined text-[18px] transition-transform ${
+                  isMasterOpen ? "rotate-180" : ""
+                }`}
+              >
+                keyboard_arrow_down
+              </span>
+            </button>
+
+            {isMasterOpen && (
+              <ul className="absolute right-0 top-full z-50 mt-1 w-56 rounded-xl border border-black/5 bg-surface-container-lowest p-1 shadow-2xl">
+                <li>
+                  <NavLink
+                    to="/obat"
+                    className={masterSubmenuLinkClass}
+                    onClick={() => setIsMasterOpen(false)}
+                  >
+                    <span className="material-symbols-outlined text-[18px]">
+                      medication
+                    </span>
+                    <span>Master Obat</span>
+                  </NavLink>
+                </li>
+                <li>
+                  <NavLink
+                    to="/jurusan"
+                    className={masterSubmenuLinkClass}
+                    onClick={() => setIsMasterOpen(false)}
+                  >
+                    <span className="material-symbols-outlined text-[18px]">
+                      school
+                    </span>
+                    <span>Master Jurusan</span>
+                  </NavLink>
+                </li>
+              </ul>
+            )}
+          </div>
         </nav>
       </div>
     </header>
