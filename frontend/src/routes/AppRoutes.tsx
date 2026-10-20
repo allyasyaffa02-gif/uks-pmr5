@@ -5,6 +5,7 @@ import { PublicOnlyRoute } from "./PublicOnlyRoute";
 import { LoginPage } from "../modules/auth/pages/LoginPage";
 import { UksMainPage } from "../modules/uks/pages/UksMainPage";
 import { MasterObatPage } from "../modules/obat/pages/MasterObatPage";
+import { MasterJurusanPage } from "../modules/jurusan/pages/MasterJurusanPage";
 
 export const AppRoutes: React.FC = () => {
   return (
@@ -37,6 +38,16 @@ export const AppRoutes: React.FC = () => {
         element={
           <ProtectedRoute>
             <MasterObatPage />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Route 4: Halaman Master Jurusan (Telah Di-autentikasi) */}
+      <Route
+        path="/jurusan"
+        element={
+          <ProtectedRoute>
+            <MasterJurusanPage />
           </ProtectedRoute>
         }
       />
