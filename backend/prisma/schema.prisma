@@ -86,7 +86,7 @@ model User {
   updatedAt DateTime? @updatedAt @map("updated_at")
   deletedAt DateTime? @map("deleted_at")
 
-  sessions  UserSession[]
+  sessions UserSession[]
 
   @@map("users")
 }
@@ -114,4 +114,24 @@ model UserSession {
   @@index([userId])
   @@index([expiresAt])
   @@map("user_sessions")
+}
+
+model MasterGrade {
+  id        BigInt    @id @default(autoincrement())
+  name      String    @db.VarChar(20)
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime? @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  @@map("master_grade")
+}
+
+model MasterFaculty {
+  id        BigInt    @id @default(autoincrement())
+  name      String    @db.VarChar(20)
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime? @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  @@map("master_faculty")
 }

@@ -215,7 +215,7 @@ export class UksService {
     > = {};
 
     pasiens.forEach((p) => {
-      const kelas = p.kelas.trim() || "(Tanpa kelas)";
+      const kelas = p.kelas.trim().toUpperCase() || "(Tanpa kelas)";
       if (!map[kelas]) {
         map[kelas] = { total: 0, upacara: 0, harian: 0 };
       }
