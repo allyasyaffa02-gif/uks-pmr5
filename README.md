@@ -427,6 +427,8 @@ Untuk pengembangan cepat, cukup jalankan `bun run dev` (Vite dev server + proxy 
 | Buat migrasi baru | `cd backend && bun run prisma:migrate` |
 | Terapkan migrasi | `cd backend && bunx prisma migrate deploy` |
 | Seed database (kategori & admin) | `cd backend && bun run prisma/seed.ts` |
+| Jalankan unit test backend | `cd backend && bun test` |
+| Unit test backend (mode watch) | `cd backend && bun run test:watch` |
 
 ### 4. Kombinasi: Database Saja via Docker
 
@@ -439,6 +441,49 @@ docker compose --profile local-db up -d db
 Lalu arahkan `backend/.env` ke `mariadb://uks_user:***@127.0.0.1:3307/uks_pmr`
 dan jalankan backend + frontend secara native seperti di atas. Container
 `backend` dan `frontend` tidak ikut berjalan karena hanya service `db` yang di-up.
+
+---
+
+## 🧪 Pengujian Unit (Backend)
+
+Backend dilengkapi **unit test** yang berjalan memakai **Bun** (`bun test`, tanpa dependency
+tambahan seperti Jest) dan **tidak membutuhkan koneksi database** — repository/layanan
+eksternal di-mock sehingga test bisa dijalankan di lingkungan mana pun.
+
+### Menjalankan Test
+
+```bash
+cd backend
+
+# Jalankan seluruh unit test sekali jalan
+bun test
+# atau lewat npm script yang sudah tersedia
+bun run test
+
+# Mode watch (otomatis jalankan ulang saat file berubah)
+bun run test:watch
+```
+
+### Cakupan Test
+
+Test berada di folder `backend/test/`:
+
+| Area | Berkas | Yang diuji |
+| :--- | :----- | :--------- |
+| Utilitas | `test/common/duration.util.test.ts` | Konversi durasi gaya `jsonwebtoken` ke detik |
+| Utilitas | `test/common/cookie.util.test.ts` | Serialisasi & parsing cookie httpOnly |
+| Bootstrapping | `test/common/setup-app.test.ts` | Konfigurasi CORS & global prefix `/api` |
+| Auth | `test/modules/auth/password.util.test.ts` | Hash & verifikasi password (scrypt) |
+| Auth | `test/modules/auth/dto.validation.test.ts` | Validasi DTO login/reset/ganti password |
+| Auth | `test/modules/auth/token.service.test.ts` | Cookie refresh & verifikasi JWT |
+| Auth | `test/modules/auth/auth.service.test.ts` | Alur login, reset password, ganti password |
+| UKS | `test/modules/uks/dto.validation.test.ts` | Validasi DTO pencatatan kasus |
+| UKS | `test/modules/uks/uks.service.test.ts` | Statistik, rekap kelas, kategori, buat & hapus kasus |
+| Obat | `test/modules/obat/dto.validation.test.ts` | Validasi DTO master obat |
+| Obat | `test/modules/obat/obat-import.service.test.ts` | Guard import Excel & pembuatan template |
+
+> 💡 File test dikecualikan dari `nest build` melalui `exclude` di `backend/tsconfig.json`,
+> sehingga hasil build produksi tidak ikut membawa file test.
 
 ---
 
